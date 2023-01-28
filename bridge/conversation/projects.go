@@ -7,6 +7,7 @@ type Project struct {
 	Members map[int64]int64 `json:"members"` // key = user id, value = node id
 }
 
+// Project ID -> Project
 var Projects map[int64]Project = make(map[int64]Project)
 
 func SetProject(id int64, project Project) {

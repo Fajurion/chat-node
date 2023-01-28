@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"chat-node/routes/auth"
 	"chat-node/routes/gateway"
 	"chat-node/routes/ping"
 
@@ -8,6 +9,7 @@ import (
 )
 
 func Setup(router fiber.Router) {
+	router.Route("/auth", auth.Setup)
 	router.Route("/gateway", gateway.SetupRoutes)
 	router.Post("/ping", ping.Pong)
 }

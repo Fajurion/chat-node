@@ -2,6 +2,7 @@ package bridge
 
 import (
 	"log"
+	"time"
 
 	"github.com/gofiber/websocket/v2"
 )
@@ -10,8 +11,14 @@ type Client struct {
 	Conn  *websocket.Conn
 	ID    int64
 	Token string
+	End   time.Time
 }
 
+func (c *Client) IsExpired() bool {
+	return c.End.Before(time.Now())
+}
+
+// User ID -> Token -> Client
 var Connections map[int64]map[string]Client = make(map[int64]map[string]Client)
 
 func AddClient(conn *websocket.Conn, id int64, token string) {
