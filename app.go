@@ -6,6 +6,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func main() {
@@ -16,11 +17,13 @@ func main() {
 		JSONDecoder: sonic.Unmarshal,
 	})
 
+	app.Use(logger.New())
+
 	app.Route("/", routes.Setup)
 
 	pipe.Create()
 
 	// Start fiber
-	app.Listen(":3001")
+	app.Listen("127.0.0.1:3001")
 
 }

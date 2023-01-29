@@ -7,8 +7,12 @@ type ConnectionToken struct {
 
 var ConnectionTokens = make(map[string]ConnectionToken)
 
-func CheckToken(token string) int64 {
-	return ConnectionTokens[token].UserID
+func CheckToken(token string) ConnectionToken {
+	return ConnectionTokens[token]
+}
+
+func RemoveToken(token string) {
+	delete(ConnectionTokens, token)
 }
 
 func AddToken(token string, id int64, session string) {
