@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chat-node/handler/setup"
 	"chat-node/pipe"
 	"chat-node/routes"
 
@@ -22,6 +23,8 @@ func main() {
 	app.Route("/", routes.Setup)
 
 	pipe.Create()
+
+	setup.Initialize()
 
 	// Start fiber
 	app.Listen("127.0.0.1:3001")
