@@ -12,14 +12,16 @@ type Message struct {
 // Routes is a map of all the routes
 var Routes map[string]func(Message) error
 
-func Handle(action string, message Message) {
+func Handle(action string, message Message) bool {
 
 	// Check if the action exists
 	if Routes[action] == nil {
-		return
+		return false
 	}
 
 	go Routes[action](message)
+
+	return true
 }
 
 func Initialize() {

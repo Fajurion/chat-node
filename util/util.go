@@ -10,10 +10,11 @@ import (
 	"github.com/bytedance/sonic"
 )
 
-const FILE_PATH = "C:\\Users\\user\\Desktop\\chat-node\\files\\"
+var Testing = false
+var FilePath = "C:/Users/thisi/OneDrive/Dokumente/We(e)b Stuff/FJ/chat/env/node"
 
-const NODE_TOKEN = "etMbbM3urDxkBRtphGWdIQ2XboZVgFcTbndiHB9PBgBhJsgFSetxYmT9Z9Ig5qK6mR8TjaFDrmq5Fi7VrrulXhKi3dnVy3gKESYmHPulv1yTCmGtuUkDiE3awAOO5y8Mxi9sTOfUFJZBncEYJcA0RPAqLrj3QSqfySBtEuMrq4DhcjtD9xzqylq4TpCWUHXIc6WpFmeiUTvgtAtp0mAsuNcfYPlpLKptO2mfFOmgbMx2hPMwX1jJa6FOB2vQg1lwMyMjGPexb1pHki26JPJJmCunIlWVMJsAObF2lrIXe4Py"
-const NODE_ID = 1
+var NODE_TOKEN = "etMbbM3urDxkBRtphGWdIQ2XboZVgFcTbndiHB9PBgBhJsgFSetxYmT9Z9Ig5qK6mR8TjaFDrmq5Fi7VrrulXhKi3dnVy3gKESYmHPulv1yTCmGtuUkDiE3awAOO5y8Mxi9sTOfUFJZBncEYJcA0RPAqLrj3QSqfySBtEuMrq4DhcjtD9xzqylq4TpCWUHXIc6WpFmeiUTvgtAtp0mAsuNcfYPlpLKptO2mfFOmgbMx2hPMwX1jJa6FOB2vQg1lwMyMjGPexb1pHki26JPJJmCunIlWVMJsAObF2lrIXe4Py"
+var NODE_ID = 1
 
 const StatusOnline = 0
 const StatusOffline = 1
@@ -36,7 +37,7 @@ func GenerateToken(tkLength int32) string {
 	return string(s)
 }
 
-const BASE_PATH = "http://localhost:3000"
+var BasePath = "http://localhost:3000"
 
 func PostRequest(url string, body map[string]interface{}) (map[string]interface{}, error) {
 
@@ -44,7 +45,7 @@ func PostRequest(url string, body map[string]interface{}) (map[string]interface{
 
 	reader := strings.NewReader(string(req))
 
-	res, err := http.Post(BASE_PATH+url, "application/json", reader)
+	res, err := http.Post(BasePath+url, "application/json", reader)
 	if err != nil {
 		return nil, err
 	}

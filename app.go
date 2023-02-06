@@ -1,9 +1,10 @@
 package main
 
 import (
-	"chat-node/handler/setup"
+	"chat-node/handler"
 	"chat-node/pipe"
 	"chat-node/routes"
+	"chat-node/setup"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -11,6 +12,11 @@ import (
 )
 
 func main() {
+
+	// Setting up the node
+	if !setup.Setup() {
+		return
+	}
 
 	// Create fiber app
 	app := fiber.New(fiber.Config{
@@ -24,7 +30,7 @@ func main() {
 
 	pipe.Create()
 
-	setup.Initialize()
+	handler.Initialize()
 
 	// Start fiber
 	app.Listen("127.0.0.1:3001")
