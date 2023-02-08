@@ -33,6 +33,6 @@ func main() {
 	handler.Initialize()
 
 	// Start fiber
-	app.Listen("127.0.0.1:3001")
+	app.Listen("127.0.0.1:" + setup.StartPort)
 
 }

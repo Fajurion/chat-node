@@ -56,6 +56,13 @@ func SetupRoutes(router fiber.Router) {
 func ws(conn *websocket.Conn) {
 	node := conn.Locals("node").(pipe.Node)
 
+	// Check if event connection is already open
+	if pipe.NodeConnections[node.ID] == nil {
+		go pipe.ConnectToNode(node)
+	}
+
+	log.Printf("Incoming event stream of node %d connected. \n", node.ID)
+
 	for {
 		// Read message as text
 		mtype, msg, err := conn.ReadMessage()

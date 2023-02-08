@@ -7,9 +7,12 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+var StartPort = "3001"
 
 func Setup() bool {
 
@@ -25,9 +28,19 @@ func Setup() bool {
 		return true
 	}
 
+	if len(strings.Split(input, ":")) > 1 {
+		StartPort = strings.Split(input, ":")[1]
+		log.Println("Starting on port " + StartPort + "!")
+	}
+
+	log.Println("Please provide the file name of the data file (e.g. data (.node will be appended automatically))")
+
+	scanner.Scan()
+	input = scanner.Text()
+
 	log.Println("Continuing in normal mode..")
 
-	if readData(util.FilePath + "/data.txt") {
+	if readData(util.FilePath + "/" + input + ".node") {
 		log.Println("Ready to start.")
 		return true
 	}
@@ -79,7 +92,7 @@ func Setup() bool {
 
 	log.Println("Creating node..")
 
-	res, err = util.PostRequest("/node/manage/create", fiber.Map{
+	res, err = util.PostRequest("/node/manage/new", fiber.Map{
 		"token":             creationToken,
 		"domain":            nodeDomain,
 		"performance_level": performanceLevel,
@@ -103,7 +116,7 @@ func Setup() bool {
 	util.NODE_ID = int(res["id"].(float64))
 
 	// Save data to file
-	f, err := os.Create(util.FilePath + "/data.txt")
+	f, err := os.Create(util.FilePath + "/" + input + ".node")
 	if err != nil {
 		log.Println("Error while saving data file.")
 		return false

@@ -2,6 +2,7 @@ package pipe
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -15,7 +16,9 @@ func ConnectToNode(node Node) {
 	defer cancel()
 
 	// Connect to node
-	c, _, err := websocket.Dial(ctx, node.GetWebSocket(), nil)
+	c, _, err := websocket.Dial(ctx, node.GetWebSocket(), &websocket.DialOptions{
+		Subprotocols: []string{fmt.Sprintf("%s_%d_%s", node.Token, node.App, node.Domain)},
+	})
 
 	if err != nil {
 		return
@@ -24,5 +27,5 @@ func ConnectToNode(node Node) {
 	// Add connection to map
 	NodeConnections[node.ID] = c
 
-	log.Println("Connected to node ", node.Domain, ".")
+	log.Printf("Outgoing event stream to node %d connected.", node.ID)
 }

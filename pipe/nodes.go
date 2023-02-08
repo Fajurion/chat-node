@@ -2,14 +2,15 @@ package pipe
 
 import (
 	"chat-node/util"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type Node struct {
 	ID     int64  `json:"id"`
-	App    uint   `json:"app"`
 	Token  string `json:"token"`
+	App    uint   `json:"app"`
 	Domain string `json:"domain"`
 }
 
@@ -17,7 +18,7 @@ func (n Node) GetWebSocket() string {
 	return "ws://" + n.Domain + "/adoption"
 }
 
-var Nodes map[int64]Node
+var Nodes map[int64]Node = make(map[int64]Node)
 
 func queryNodes() (bool, bool) {
 
@@ -37,10 +38,19 @@ func queryNodes() (bool, bool) {
 		return false, true
 	}
 
-	nodeList := res["nodes"].([]Node)
+	nodeList := res["nodes"].([]interface{})
+
+	log.Println(nodeList)
 
 	for _, node := range nodeList {
-		Nodes[node.ID] = node
+
+		n := node.(map[string]interface{})
+		Nodes[int64(n["id"].(float64))] = Node{
+			ID:     int64(n["id"].(float64)),
+			Token:  n["token"].(string),
+			App:    uint(n["app"].(float64)),
+			Domain: n["domain"].(string),
+		}
 	}
 
 	return false, false
