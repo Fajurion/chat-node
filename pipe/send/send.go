@@ -3,24 +3,31 @@ package send
 import (
 	"chat-node/bridge"
 	"chat-node/pipe"
+
+	"github.com/bytedance/sonic"
 )
 
-func Pipe(channel pipe.Channel, msg []byte, event pipe.Event) error {
+func Pipe(message pipe.Message) error {
 
-	// Send to own client
-	if channel.Sender != 0 {
-		bridge.Send(channel.Sender, msg)
+	msg, err := sonic.Marshal(message)
+	if err != nil {
+		return err
 	}
 
-	switch channel.Channel {
+	// Send to own client
+	if message.Channel.IsProject() {
+		bridge.Send(message.Channel.Sender, msg)
+	}
+
+	switch message.Channel.Channel {
 	case "project":
-		return sendToProject(channel.Target[0], channel.Sender, msg, event)
+		return sendToProject(message, msg)
 
 	case "broadcast":
-		return sendBroadcast(channel.Target, msg, event)
+		return sendBroadcast(message, msg)
 
 	case "p2p":
-		return sendP2P(channel.Sender, channel.Target[0], msg, event)
+		return sendP2P(message, msg)
 	}
 
 	return nil

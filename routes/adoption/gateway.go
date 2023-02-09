@@ -7,11 +7,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 )
 
 func SetupRoutes(router fiber.Router) {
+
+	router.Post("/initialize", initialize)
 
 	// Inject a middleware to check if the request is a websocket upgrade request
 	router.Use("/", func(c *fiber.Ctx) error {
@@ -71,7 +74,15 @@ func ws(conn *websocket.Conn) {
 		}
 
 		if mtype == websocket.TextMessage {
-			log.Printf("Node %d: %s \n", node.ID, string(msg))
+
+			// Parse message
+			var message pipe.Message
+			if err := sonic.Unmarshal(msg, &message); err != nil {
+				return
+			}
+
+			// Send message to node
+
 		}
 	}
 

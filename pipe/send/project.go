@@ -1,18 +1,27 @@
 package send
 
 import (
-	"chat-node/bridge"
 	"chat-node/bridge/conversation"
 	"chat-node/pipe"
+	"context"
+
+	"nhooyr.io/websocket"
 )
 
-func sendToProject(project int64, sender int64, msg []byte, event pipe.Event) error {
-	for member := range conversation.GetProject(project).Members {
-		if member != sender {
+func sendToProject(message pipe.Message, msg []byte) error {
+
+	pj, err := conversation.GetProject(message.Channel.Target[0])
+	if err != nil {
+		return err
+	}
+
+	for member, node := range pj.Members {
+		if member != message.Channel.Sender {
 
 			// Send to member
-			bridge.Send(member, msg)
+			pipe.NodeConnections[node].Write(context.Background(), websocket.MessageText, msg)
 		}
+
 	}
 
 	return nil

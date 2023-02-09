@@ -14,6 +14,19 @@ func SetProject(id int64, project Project) {
 	Projects[id] = project
 }
 
-func GetProject(id int64) Project {
-	return Projects[id]
+func GetProject(id int64) (Project, error) {
+
+	// Check if project exists
+	if _, ok := Projects[id]; !ok {
+
+		if err := FetchProject(id); err != nil {
+			return Project{}, err
+		}
+	}
+
+	return Projects[id], nil
+}
+
+func FetchProject(id int64) error {
+	return nil
 }

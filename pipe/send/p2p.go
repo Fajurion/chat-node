@@ -5,10 +5,15 @@ import (
 	"chat-node/pipe"
 )
 
-func sendP2P(sender int64, receiver int64, msg []byte, event pipe.Event) error {
+func sendP2P(message pipe.Message, msg []byte) error {
 
-	// Send to receiver
-	bridge.Send(receiver, msg)
+	// Check if receiver is on this node
+	if _, ok := bridge.Connections[message.Channel.Target[0]]; ok {
+		bridge.Send(message.Channel.Sender, msg)
+		return nil
+	}
+
+	// TODO: Get other node
 
 	return nil
 }

@@ -1,6 +1,7 @@
 package pipe
 
 import (
+	"chat-node/util"
 	"context"
 	"fmt"
 	"log"
@@ -17,7 +18,7 @@ func ConnectToNode(node Node) {
 
 	// Connect to node
 	c, _, err := websocket.Dial(ctx, node.GetWebSocket(), &websocket.DialOptions{
-		Subprotocols: []string{fmt.Sprintf("%s_%d_%s", node.Token, node.App, node.Domain)},
+		Subprotocols: []string{fmt.Sprintf("%s_%d_%s", node.Token, util.NODE_ID, util.NODE_TOKEN)},
 	})
 
 	if err != nil {
