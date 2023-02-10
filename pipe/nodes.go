@@ -3,6 +3,7 @@ package pipe
 import (
 	"chat-node/util"
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -40,8 +41,6 @@ func queryNodes() (bool, bool) {
 
 	nodeList := res["nodes"].([]interface{})
 
-	log.Println(nodeList)
-
 	for _, node := range nodeList {
 
 		n := node.(map[string]interface{})
@@ -54,4 +53,32 @@ func queryNodes() (bool, bool) {
 	}
 
 	return false, false
+}
+
+var CurrentNode Node
+
+func queryNode() {
+
+	res, err := util.PostRequest("/node/this", fiber.Map{
+		"token": util.NODE_TOKEN,
+	})
+
+	if err != nil {
+		log.Println("Backend is currently offline!")
+		os.Exit(1)
+	}
+
+	if !res["success"].(bool) {
+		log.Println("This node may not be registered..")
+		os.Exit(1)
+	}
+
+	n := res["node"].(map[string]interface{})
+
+	CurrentNode = Node{
+		ID:     int64(n["id"].(float64)),
+		Token:  n["token"].(string),
+		App:    uint(n["app"].(float64)),
+		Domain: n["domain"].(string),
+	}
 }

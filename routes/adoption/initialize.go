@@ -20,7 +20,8 @@ func initialize(c *fiber.Ctx) error {
 		return err
 	}
 
-	if pipe.Nodes[req.Node.ID].Token != req.Node.Token || req.Token != util.NODE_TOKEN {
+	// Check token
+	if req.Token != util.NODE_TOKEN {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 

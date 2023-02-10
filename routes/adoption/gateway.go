@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 )
@@ -65,6 +64,17 @@ func ws(conn *websocket.Conn) {
 	}
 
 	log.Printf("Incoming event stream of node %d connected. \n", node.ID)
+	defer func() {
+
+		// Close connection
+		log.Printf("Incoming event stream of node %d disconnected. \n", node.ID)
+
+		pipe.ReportOffline(node)
+		pipe.NodeConnections[node.ID].Close(websocket.CloseInternalServerErr, "incoming.closed")
+		delete(pipe.NodeConnections, node.ID)
+
+		conn.Close()
+	}()
 
 	for {
 		// Read message as text
@@ -76,13 +86,20 @@ func ws(conn *websocket.Conn) {
 		if mtype == websocket.TextMessage {
 
 			// Parse message
-			var message pipe.Message
-			if err := sonic.Unmarshal(msg, &message); err != nil {
-				return
-			}
+			log.Println("from node", node.ID, ":", string(msg))
 
-			// Send message to node
+			/*
 
+				// Parse message
+				var message pipe.Message
+				if err := sonic.Unmarshal(msg, &message); err != nil {
+					return
+				}
+
+				// Send message to node
+				receive.Handle(message)
+
+			*/
 		}
 	}
 

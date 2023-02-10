@@ -4,6 +4,7 @@ import (
 	"chat-node/util"
 	"log"
 	"os"
+	"os/exec"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -11,6 +12,20 @@ import (
 func Create() {
 
 	log.Println("Creating pipe...")
+
+	// Get current node
+	log.Println("Getting current node info...")
+	queryNode()
+
+	errTitle := exec.Command("cmd", "/C", "title", CurrentNode.Domain).Run()
+	if errTitle != nil {
+		log.Println("Failed to set window title.")
+	}
+
+	log.Println("Current node info:", CurrentNode)
+
+	// Tell server new status
+	updateStatus()
 
 	// Get all nodes
 	log.Println("Connecting to other nodes..")
@@ -28,12 +43,9 @@ func Create() {
 		// Connect to all nodes
 		for _, node := range Nodes {
 			log.Println("Connecting to node " + node.Domain + "...")
-			go ConnectToNode(node)
+			ConnectToNode(node)
 		}
 	}
-
-	// Tell server new status
-	updateStatus()
 
 	log.Println("Updated node status to online.")
 
@@ -41,9 +53,8 @@ func Create() {
 
 // updateStatus updates the node status to online
 func updateStatus() {
-	res, err := util.PostRequest("/node/status/update", fiber.Map{
-		"token":  util.NODE_TOKEN,
-		"status": util.StatusOnline,
+	res, err := util.PostRequest("/node/status/online", fiber.Map{
+		"token": util.NODE_TOKEN,
 	})
 
 	if err != nil {
