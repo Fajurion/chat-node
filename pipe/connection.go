@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"nhooyr.io/websocket"
@@ -28,15 +27,6 @@ func ConnectToNode(node Node) {
 	NodeConnections[node.ID] = c
 
 	log.Printf("Outgoing event stream to node %d connected.", node.ID)
-
-	go func() {
-		for {
-			time.Sleep(time.Second * 5)
-
-			// Send ping
-			c.Write(context.Background(), websocket.MessageText, []byte("ping"))
-		}
-	}()
 }
 
 func ReportOffline(node Node) {

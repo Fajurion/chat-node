@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/cornelk/hashmap"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 )
@@ -21,53 +22,57 @@ func (c *Client) IsExpired() bool {
 }
 
 // User ID -> Token -> Client
-var Connections map[int64]map[string]Client = make(map[int64]map[string]Client)
+var Connections = hashmap.New[int64, *hashmap.Map[string, Client]]()
 
 func AddClient(conn *websocket.Conn, id int64, token string, session string) {
 	log.Println("New connection", token)
 
-	if Connections[id] == nil {
-		Connections[id] = make(map[string]Client)
-	}
+	clients, _ := Connections.GetOrInsert(id, hashmap.New[string, Client]())
 
-	Connections[id][token] = Client{
+	clients.Set(token, Client{
 		Conn:    conn,
 		ID:      id,
 		Session: session,
-	}
+	})
 }
 
 func Remove(id int64, token string) {
 	log.Println("Connection closed", token)
-	Connections[id][token].Conn.Close()
+	clients, _ := Connections.Get(id)
+	client, _ := clients.Get(token)
 
 	// Send to server
 	util.PostRequest("/node/disconnect", fiber.Map{
 		"node_token": util.NODE_TOKEN,
-		"token":      Connections[id][token].Session,
+		"token":      client.Session,
 	})
 
-	delete(Connections[id], token)
+	clients.Del(token)
 
-	if len(Connections[id]) == 0 {
-		delete(Connections, id)
-	}
-}
-
-func Broadcast(msg []byte) {
-	for _, clients := range Connections {
-		for _, client := range clients {
-			SendMessage(client.Conn, msg)
-		}
+	if clients.Len() == 0 {
+		Connections.Del(id)
+	} else {
+		Connections.Set(id, clients)
 	}
 }
 
 func Send(id int64, msg []byte) {
-	for _, client := range Connections[id] {
+	clients, _ := Connections.Get(id)
+
+	clients.Range(func(key string, client Client) bool {
+
 		SendMessage(client.Conn, msg)
-	}
+		return true
+	})
 }
 
 func SendMessage(conn *websocket.Conn, msg []byte) {
 	conn.WriteMessage(websocket.TextMessage, msg)
+}
+
+func Get(id int64, token string) Client {
+	clients, _ := Connections.Get(id)
+	client, _ := clients.Get(token)
+
+	return client
 }

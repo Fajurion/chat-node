@@ -75,7 +75,7 @@ func ws(conn *websocket.Conn) {
 
 			// Handle the event
 			if !handler.Handle(message.Action, handler.Message{
-				Client: bridge.Connections[tk.UserID][token],
+				Client: bridge.Get(tk.UserID, token),
 				Data:   message.Data,
 			}) {
 				bridge.Remove(tk.UserID, token)

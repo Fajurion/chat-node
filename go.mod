@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/cornelk/hashmap v1.0.8 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/philhofer/fwd v1.1.2 // indirect
 	github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94 // indirect

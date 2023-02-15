@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 )
@@ -86,20 +87,14 @@ func ws(conn *websocket.Conn) {
 		if mtype == websocket.TextMessage {
 
 			// Parse message
-			log.Println("from node", node.ID, ":", string(msg))
+			var message pipe.Message
+			if err := sonic.Unmarshal(msg, &message); err != nil {
+				return
+			}
 
-			/*
+			// Send message to node
+			log.Println("Received message:", message)
 
-				// Parse message
-				var message pipe.Message
-				if err := sonic.Unmarshal(msg, &message); err != nil {
-					return
-				}
-
-				// Send message to node
-				receive.Handle(message)
-
-			*/
 		}
 	}
 

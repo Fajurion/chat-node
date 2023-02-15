@@ -16,8 +16,8 @@ func sendBroadcast(message pipe.Message, msg []byte) error {
 	}
 
 	// Send to other nodes
-	for _, node := range pipe.Nodes {
-		pipe.NodeConnections[node.ID].Write(context.Background(), websocket.MessageText, msg)
+	for _, node := range pipe.NodeConnections {
+		node.Write(context.Background(), websocket.MessageText, msg)
 	}
 
 	return nil

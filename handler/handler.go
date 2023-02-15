@@ -2,6 +2,9 @@ package handler
 
 import (
 	"chat-node/bridge"
+	"chat-node/pipe"
+	"chat-node/pipe/send"
+	"time"
 )
 
 type Message struct {
@@ -26,4 +29,21 @@ func Handle(action string, message Message) bool {
 
 func Initialize() {
 	Routes = make(map[string]func(Message) error)
+}
+
+func TestConnection() {
+	go func() {
+		for {
+			time.Sleep(time.Second * 5)
+
+			// Send ping
+			send.Pipe(pipe.Message{
+				Channel: pipe.BroadcastChannel(1, []int64{2}),
+				Event: pipe.Event{
+					Name: "ping",
+					Data: map[string]interface{}{},
+				},
+			})
+		}
+	}()
 }

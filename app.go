@@ -31,6 +31,7 @@ func main() {
 	pipe.Create()
 
 	handler.Initialize()
+	handler.TestConnection()
 
 	// Start fiber
 	app.Listen(pipe.CurrentNode.Domain)

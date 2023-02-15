@@ -65,11 +65,11 @@ var AvailableEvents = map[string][]string{
 	"p2p":       {"key_exc", "friend_rq", "friend_rq_accept", "friend_rq_reject"},
 }
 
-func P2PChannel(sender int64, receiver int64) Channel {
+func P2PChannel(sender int64, receiver int64, receiverNode int64) Channel {
 	return Channel{
 		Channel: "p2p",
 		Sender:  sender,
-		Target:  []int64{receiver},
+		Target:  []int64{receiver, receiverNode},
 	}
 }
 

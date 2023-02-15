@@ -65,3 +65,7 @@ func PostRequest(url string, body map[string]interface{}) (map[string]interface{
 
 	return data, nil
 }
+
+func First(a interface{}, _ interface{}) interface{} {
+	return a
+}
