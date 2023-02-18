@@ -9,26 +9,27 @@ import (
 
 type Message struct {
 	Client bridge.Client          `json:"client"`
+	Action string                 `json:"action"` // The action to perform
 	Data   map[string]interface{} `json:"data"`
 }
 
 // Routes is a map of all the routes
-var Routes map[string]func(Message) error
+var Routes map[string]func(Message)
 
-func Handle(action string, message Message) bool {
+func Handle(message Message) bool {
 
 	// Check if the action exists
-	if Routes[action] == nil {
+	if Routes[message.Action] == nil {
 		return false
 	}
 
-	go Routes[action](message)
+	go Routes[message.Action](message)
 
 	return true
 }
 
 func Initialize() {
-	Routes = make(map[string]func(Message) error)
+	Routes = make(map[string]func(Message))
 }
 
 func TestConnection() {

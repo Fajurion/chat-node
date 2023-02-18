@@ -8,7 +8,7 @@ require (
 )
 
 require (
-	github.com/cornelk/hashmap v1.0.8 // indirect
+	github.com/cornelk/hashmap v1.0.8
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/philhofer/fwd v1.1.2 // indirect
 	github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94 // indirect
@@ -16,7 +16,7 @@ require (
 )
 
 require (
-	github.com/bytedance/sonic v1.7.0
+	github.com/bytedance/sonic v1.8.0
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
@@ -32,9 +32,9 @@ require (
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
-	github.com/savsgio/gotils v0.0.0-20230203094617-bcbc01813b4f // indirect
+	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.44.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 )

@@ -3,6 +3,7 @@ package auth
 import (
 	"chat-node/bridge"
 	"chat-node/util"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -14,6 +15,8 @@ type intializeRequest struct {
 }
 
 func initializeConnection(c *fiber.Ctx) error {
+
+	log.Println("Initialize connection")
 
 	// Parse the request
 	var req intializeRequest

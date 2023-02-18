@@ -1,4 +1,4 @@
-package handler
+package create
 
 import (
 	"chat-node/handler"
@@ -7,7 +7,7 @@ import (
 	"chat-node/handler/project"
 )
 
-func Initialize() {
+func Create() {
 	handler.Initialize()
 
 	friends.SetupActions()

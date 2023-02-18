@@ -37,15 +37,20 @@ func GenerateToken(tkLength int32) string {
 	return string(s)
 }
 
+var Protocol = "http://"
 var BasePath = "http://localhost:3000"
 
 func PostRequest(url string, body map[string]interface{}) (map[string]interface{}, error) {
+	return PostRaw(BasePath+url, body)
+}
+
+func PostRaw(url string, body map[string]interface{}) (map[string]interface{}, error) {
 
 	req, _ := sonic.Marshal(body)
 
 	reader := strings.NewReader(string(req))
 
-	res, err := http.Post(BasePath+url, "application/json", reader)
+	res, err := http.Post(url, "application/json", reader)
 	if err != nil {
 		return nil, err
 	}

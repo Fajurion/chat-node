@@ -11,6 +11,10 @@ import (
 func sendBroadcast(message pipe.Message, msg []byte) error {
 	for _, receiver := range message.Channel.Target {
 
+		if _, ok := bridge.Connections.Get(receiver); !ok {
+			continue
+		}
+
 		// Send to receiver
 		bridge.Send(receiver, msg)
 	}

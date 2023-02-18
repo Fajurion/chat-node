@@ -9,40 +9,12 @@ type Channel struct {
 	Sender  int64   `json:"sender"`  // User ID (0 for system)
 	Channel string  `json:"channel"` // "project", "event"
 	Target  []int64 `json:"target"`  // Project ID or User ID
+	Node    Node    `json:"node"`    // Node Domain (for socketless)
 }
 
 type Message struct {
 	Channel Channel `json:"channel"`
 	Event   Event   `json:"event"`
-}
-
-func (c Channel) IsValid(event Event) bool {
-	for _, channel := range AvailableChannels {
-		if c.Channel == channel {
-			return true
-		}
-	}
-
-	for _, event := range AvailableEvents[c.Channel] {
-		if c.Channel == event {
-			return true
-		}
-	}
-
-	if len(c.Target) == 0 {
-		return false
-	}
-
-	switch c.Channel {
-	case "p2p":
-	case "project":
-		return len(c.Target) > 1
-
-	case "event":
-		return true
-	}
-
-	return false
 }
 
 func (c Channel) IsP2P() bool {
@@ -57,12 +29,8 @@ func (c Channel) IsBroadcast() bool {
 	return c.Channel == "broadcast"
 }
 
-var AvailableChannels = []string{"project", "broadcast", "p2p"}
-
-var AvailableEvents = map[string][]string{
-	"project":   {"msg", "msg_edit", "msg_delete", "conv_join", "conv_leave"},
-	"broadcast": {"status_change"},
-	"p2p":       {"key_exc", "friend_rq", "friend_rq_accept", "friend_rq_reject"},
+func (c Channel) IsSocketless() bool {
+	return c.Channel == "socketless"
 }
 
 func P2PChannel(sender int64, receiver int64, receiverNode int64) Channel {
@@ -86,5 +54,21 @@ func BroadcastChannel(sender int64, receivers []int64) Channel {
 		Channel: "broadcast",
 		Sender:  sender,
 		Target:  receivers,
+	}
+}
+
+func SocketlessChannel(sender int64, node Node, receivers []int64) Channel {
+	return Channel{
+		Channel: "socketless",
+		Sender:  sender,
+		Target:  receivers,
+		Node:    node,
+	}
+}
+
+func ClientChannel(receiver int64) Channel {
+	return Channel{
+		Channel: "client",
+		Target:  []int64{receiver},
 	}
 }

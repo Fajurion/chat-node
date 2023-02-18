@@ -3,6 +3,7 @@ package gateway
 import (
 	"chat-node/bridge"
 	"chat-node/handler"
+	"log"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -62,6 +63,8 @@ func ws(conn *websocket.Conn) {
 			break
 		}
 
+		log.Println(mtype)
+
 		// Broadcast msg
 		if mtype == websocket.TextMessage {
 
@@ -69,16 +72,15 @@ func ws(conn *websocket.Conn) {
 			var message Message
 			err := sonic.UnmarshalString(string(msg), &message)
 			if err != nil {
-				bridge.Remove(tk.UserID, token)
-				continue
+				return
 			}
 
 			// Handle the event
-			if !handler.Handle(message.Action, handler.Message{
+			if !handler.Handle(handler.Message{
 				Client: bridge.Get(tk.UserID, token),
 				Data:   message.Data,
+				Action: message.Action,
 			}) {
-				bridge.Remove(tk.UserID, token)
 				return
 			}
 

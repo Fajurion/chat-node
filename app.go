@@ -2,6 +2,7 @@ package main
 
 import (
 	"chat-node/handler"
+	handlerCreate "chat-node/handler/create"
 	"chat-node/pipe"
 	"chat-node/routes"
 	"chat-node/setup"
@@ -30,7 +31,8 @@ func main() {
 
 	pipe.Create()
 
-	handler.Initialize()
+	// Create handlers
+	handlerCreate.Create()
 	handler.TestConnection()
 
 	// Start fiber
