@@ -10,7 +10,7 @@ import (
 
 type intializeRequest struct {
 	NodeToken string `json:"node_token"`
-	Session   string `json:"session"`
+	Session   uint   `json:"session"`
 	UserID    int64  `json:"user_id"`
 }
 

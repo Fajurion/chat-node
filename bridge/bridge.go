@@ -13,7 +13,7 @@ import (
 type Client struct {
 	Conn     *websocket.Conn
 	ID       int64
-	Session  string
+	Session  uint
 	Username string
 	Tag      string
 	End      time.Time
@@ -26,7 +26,7 @@ func (c *Client) IsExpired() bool {
 // User ID -> Token -> Client
 var Connections = hashmap.New[int64, *hashmap.Map[string, Client]]()
 
-func AddClient(conn *websocket.Conn, id int64, token string, session string) {
+func AddClient(conn *websocket.Conn, id int64, token string, session uint) {
 	log.Println("New connection", token)
 
 	if _, ok := Connections.Get(id); !ok {

@@ -60,6 +60,7 @@ var CurrentNode Node
 func queryNode() {
 
 	res, err := util.PostRequest("/node/this", fiber.Map{
+		"id":    util.NODE_ID,
 		"token": util.NODE_TOKEN,
 	})
 
