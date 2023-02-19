@@ -33,7 +33,6 @@ func SetupRoutes(router fiber.Router) {
 
 			// Set the token as a local variable
 			c.Locals("ws", true)
-			c.Locals("token", token)
 			c.Locals("tk", tk)
 			return c.Next()
 		}
@@ -51,10 +50,9 @@ type Message struct {
 
 func ws(conn *websocket.Conn) {
 	tk := conn.Locals("tk").(bridge.ConnectionToken)
-	token := conn.Locals("token").(string)
 
-	bridge.AddClient(conn, tk.UserID, token, tk.Session)
-	defer bridge.Remove(tk.UserID, token)
+	bridge.AddClient(conn, tk.UserID, tk.Session)
+	defer bridge.Remove(tk.UserID, tk.Session)
 
 	for {
 		// Read message as text
@@ -77,7 +75,7 @@ func ws(conn *websocket.Conn) {
 
 			// Handle the event
 			if !handler.Handle(handler.Message{
-				Client: bridge.Get(tk.UserID, token),
+				Client: bridge.Get(tk.UserID, tk.Session),
 				Data:   message.Data,
 				Action: message.Action,
 			}) {
@@ -85,7 +83,7 @@ func ws(conn *websocket.Conn) {
 			}
 
 		} else {
-			bridge.Remove(tk.UserID, token)
+			bridge.Remove(tk.UserID, tk.Session)
 		}
 	}
 }

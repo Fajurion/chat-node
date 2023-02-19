@@ -1,19 +1,16 @@
 package bridge
 
 import (
-	"chat-node/util"
-	"log"
 	"time"
 
 	"github.com/cornelk/hashmap"
-	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 )
 
 type Client struct {
 	Conn     *websocket.Conn
 	ID       int64
-	Session  uint
+	Session  uint64
 	Username string
 	Tag      string
 	End      time.Time
@@ -24,18 +21,17 @@ func (c *Client) IsExpired() bool {
 }
 
 // User ID -> Token -> Client
-var Connections = hashmap.New[int64, *hashmap.Map[string, Client]]()
+var Connections = hashmap.New[int64, *hashmap.Map[uint64, Client]]()
 
-func AddClient(conn *websocket.Conn, id int64, token string, session uint) {
-	log.Println("New connection", token)
+func AddClient(conn *websocket.Conn, id int64, session uint64) {
 
 	if _, ok := Connections.Get(id); !ok {
-		Connections.Insert(id, hashmap.New[string, Client]())
+		Connections.Insert(id, hashmap.New[uint64, Client]())
 	}
 
 	clients, _ := Connections.Get(id)
 
-	clients.Insert(token, Client{
+	clients.Insert(session, Client{
 		Conn:    conn,
 		ID:      id,
 		Session: session,
@@ -44,18 +40,11 @@ func AddClient(conn *websocket.Conn, id int64, token string, session uint) {
 	Connections.Set(id, clients)
 }
 
-func Remove(id int64, token string) {
-	log.Println("Connection closed", token)
+func Remove(id int64, session uint64) {
+
 	clients, _ := Connections.Get(id)
-	client, _ := clients.Get(token)
 
-	// Send to server
-	util.PostRequest("/node/disconnect", fiber.Map{
-		"node_token": util.NODE_TOKEN,
-		"token":      client.Session,
-	})
-
-	clients.Del(token)
+	clients.Del(session)
 
 	if clients.Len() == 0 {
 		Connections.Del(id)
@@ -67,7 +56,7 @@ func Remove(id int64, token string) {
 func Send(id int64, msg []byte) {
 	clients, _ := Connections.Get(id)
 
-	clients.Range(func(key string, client Client) bool {
+	clients.Range(func(session uint64, client Client) bool {
 
 		SendMessage(client.Conn, msg)
 		return true
@@ -78,9 +67,15 @@ func SendMessage(conn *websocket.Conn, msg []byte) {
 	conn.WriteMessage(websocket.TextMessage, msg)
 }
 
-func Get(id int64, token string) Client {
+func Get(id int64, session uint64) Client {
 	clients, _ := Connections.Get(id)
-	client, _ := clients.Get(token)
+	client, _ := clients.Get(session)
 
 	return client
+}
+
+func GetConnections(id int64) int {
+	clients, _ := Connections.Get(id)
+
+	return clients.Len()
 }
