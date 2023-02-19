@@ -1,8 +1,10 @@
 package bridge
 
 import (
+	"chat-node/pipe"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/cornelk/hashmap"
 	"github.com/gofiber/websocket/v2"
 )
@@ -14,6 +16,16 @@ type Client struct {
 	Username string
 	Tag      string
 	End      time.Time
+}
+
+func (c *Client) SendEvent(event pipe.Event) {
+
+	msg, err := sonic.Marshal(event)
+	if err != nil {
+		return
+	}
+
+	SendMessage(c.Conn, msg)
 }
 
 func (c *Client) IsExpired() bool {
@@ -61,6 +73,13 @@ func Send(id int64, msg []byte) {
 		SendMessage(client.Conn, msg)
 		return true
 	})
+}
+
+func SendSession(id int64, session uint64, msg []byte) {
+	clients, _ := Connections.Get(id)
+	client, _ := clients.Get(session)
+
+	SendMessage(client.Conn, msg)
 }
 
 func SendMessage(conn *websocket.Conn, msg []byte) {

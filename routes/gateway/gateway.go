@@ -3,7 +3,6 @@ package gateway
 import (
 	"chat-node/bridge"
 	"chat-node/handler"
-	"log"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -60,8 +59,6 @@ func ws(conn *websocket.Conn) {
 		if err != nil {
 			break
 		}
-
-		log.Println(mtype)
 
 		// Broadcast msg
 		if mtype == websocket.TextMessage {
