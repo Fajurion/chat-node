@@ -51,8 +51,8 @@ func friendRequest(message handler.Message) {
 	case "accept":
 		handler.StatusResponse(message, "accepted")
 
-		send.Pipe(pipe.Message{
-			Channel: pipe.SocketlessChannel(message.Client.ID, nodeEntity, []int64{friend}),
+		send.Socketless(nodeEntity, pipe.Message{
+			Channel: pipe.BroadcastChannel(message.Client.ID, []int64{friend}),
 			Event: pipe.Event{
 				Name: "friend_request",
 				Data: map[string]interface{}{
@@ -67,8 +67,8 @@ func friendRequest(message handler.Message) {
 	case "send":
 		handler.StatusResponse(message, "sent")
 
-		send.Pipe(pipe.Message{
-			Channel: pipe.SocketlessChannel(message.Client.ID, nodeEntity, []int64{friend}),
+		send.Socketless(nodeEntity, pipe.Message{
+			Channel: pipe.BroadcastChannel(message.Client.ID, []int64{friend}),
 			Event: pipe.Event{
 				Name: "friend_request",
 				Data: map[string]interface{}{
@@ -80,6 +80,5 @@ func friendRequest(message handler.Message) {
 			},
 		})
 
-		// TODO: Send notification to user
 	}
 }

@@ -4,14 +4,20 @@ import (
 	"chat-node/pipe"
 	"chat-node/util"
 
+	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 )
 
-func sendSocketless(message pipe.Message, msg []byte) error {
+func Socketless(nodeEntity pipe.Node, message pipe.Message) error {
 
-	_, err := util.PostRaw(util.Protocol+message.Channel.Node.Domain+"/adoption/socketless", fiber.Map{
+	msg, err := sonic.Marshal(message)
+	if err != nil {
+		return err
+	}
+
+	_, err = util.PostRaw(util.Protocol+nodeEntity.Domain+"/adoption/socketless", fiber.Map{
 		"this":    util.NODE_ID,
-		"token":   message.Channel.Node.Token,
+		"token":   nodeEntity.Token,
 		"message": string(msg),
 	})
 

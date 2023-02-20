@@ -86,11 +86,11 @@ func SendMessage(conn *websocket.Conn, msg []byte) {
 	conn.WriteMessage(websocket.TextMessage, msg)
 }
 
-func Get(id int64, session uint64) Client {
+func Get(id int64, session uint64) *Client {
 	clients, _ := Connections.Get(id)
 	client, _ := clients.Get(session)
 
-	return client
+	return &client
 }
 
 func GetConnections(id int64) int {

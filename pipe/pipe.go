@@ -9,7 +9,6 @@ type Channel struct {
 	Sender  int64   `json:"sender"`  // User ID (0 for system)
 	Channel string  `json:"channel"` // "project", "event"
 	Target  []int64 `json:"target"`  // Project ID or User ID
-	Node    Node    `json:"node"`    // Node Domain (for socketless)
 }
 
 type Message struct {
@@ -54,15 +53,6 @@ func BroadcastChannel(sender int64, receivers []int64) Channel {
 		Channel: "broadcast",
 		Sender:  sender,
 		Target:  receivers,
-	}
-}
-
-func SocketlessChannel(sender int64, node Node, receivers []int64) Channel {
-	return Channel{
-		Channel: "socketless",
-		Sender:  sender,
-		Target:  receivers,
-		Node:    node,
 	}
 }
 

@@ -22,7 +22,7 @@ func sendP2P(message pipe.Message, msg []byte) error {
 		return nil
 	}
 
-	pipe.NodeConnections[message.Channel.Target[1]].Write(context.Background(), websocket.MessageText, msg)
+	pipe.GetConnection(message.Channel.Target[1]).Write(context.Background(), websocket.MessageText, msg)
 
 	return nil
 }

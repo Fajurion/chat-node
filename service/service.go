@@ -25,7 +25,7 @@ func User(client *bridge.Client) {
 	var current fetching.Session
 	if err := database.DBConn.Where("session = ?", session).Take(&session).Error; err == nil {
 
-		// TODO: New device
+		// TODO: New device (sync with old device)
 
 		client.SendEvent(pipe.Event{
 			Name: "setup",

@@ -29,9 +29,6 @@ func Pipe(message pipe.Message) error {
 	case "p2p":
 		return sendP2P(message, msg)
 
-	case "socketless":
-		return sendSocketless(message, msg)
-
 	case "client":
 		bridge.Send(message.Channel.Target[0], msg)
 		return nil

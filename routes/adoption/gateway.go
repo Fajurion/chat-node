@@ -4,8 +4,6 @@ import (
 	"chat-node/pipe"
 	"chat-node/util"
 	"log"
-	"strconv"
-	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -14,8 +12,6 @@ import (
 
 func SetupRoutes(router fiber.Router) {
 
-	router.Post("/initialize", initialize)
-
 	// Inject a middleware to check if the request is a websocket upgrade request
 	router.Use("/", func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
@@ -23,29 +19,22 @@ func SetupRoutes(router fiber.Router) {
 			// Check if the request has a token
 			token := c.Get("Sec-WebSocket-Protocol")
 
-			if len(token) == 0 {
+			// Parse request
+			var req pipe.AdoptionRequest
+			if err := sonic.Unmarshal([]byte(token), &req); err != nil {
 				return c.SendStatus(fiber.StatusUnauthorized)
 			}
 
 			// Check if the token is valid
-			args := strings.Split(token, "_")
-
-			if len(args) != 3 {
+			if util.NODE_TOKEN != req.Token {
 				return c.SendStatus(fiber.StatusUnauthorized)
 			}
 
-			id, err := strconv.ParseInt(args[1], 10, 64)
-			if err != nil {
-				return c.SendStatus(fiber.StatusUnauthorized)
-			}
-
-			if args[0] != util.NODE_TOKEN || args[2] != pipe.Nodes[id].Token {
-				return c.SendStatus(fiber.StatusUnauthorized)
-			}
+			pipe.AddNode(req.Adopting)
 
 			// Set the token as a local variable
 			c.Locals("ws", true)
-			c.Locals("node", pipe.Nodes[id])
+			c.Locals("node", req.Adopting)
 			return c.Next()
 		}
 
@@ -60,7 +49,7 @@ func ws(conn *websocket.Conn) {
 	node := conn.Locals("node").(pipe.Node)
 
 	// Check if event connection is already open
-	if pipe.NodeConnections[node.ID] == nil {
+	if !pipe.ConnectionExists(node.ID) {
 		go pipe.ConnectToNode(node)
 	}
 
@@ -70,10 +59,7 @@ func ws(conn *websocket.Conn) {
 		// Close connection
 		log.Printf("Incoming event stream of node %d disconnected. \n", node.ID)
 
-		pipe.ReportOffline(node)
-		pipe.NodeConnections[node.ID].Close(websocket.CloseInternalServerErr, "incoming.closed")
-		delete(pipe.NodeConnections, node.ID)
-
+		pipe.Offline(node)
 		conn.Close()
 	}()
 

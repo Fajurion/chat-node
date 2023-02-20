@@ -3,6 +3,7 @@ package gateway
 import (
 	"chat-node/bridge"
 	"chat-node/handler"
+	"chat-node/service"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -52,6 +53,8 @@ func ws(conn *websocket.Conn) {
 
 	bridge.AddClient(conn, tk.UserID, tk.Session)
 	defer bridge.Remove(tk.UserID, tk.Session)
+
+	service.User(bridge.Get(tk.UserID, tk.Session))
 
 	for {
 		// Read message as text

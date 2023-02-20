@@ -8,7 +8,7 @@ import (
 )
 
 type Message struct {
-	Client bridge.Client          `json:"client"`
+	Client *bridge.Client         `json:"client"`
 	Action string                 `json:"action"` // The action to perform
 	Data   map[string]interface{} `json:"data"`
 }

@@ -14,7 +14,7 @@ func Create() {
 	log.Println("Creating pipe...")
 
 	// Get current node
-	log.Println("Getting current node info...")
+	log.Printf("Getting current node info... (ID: %d)", util.NODE_ID)
 	queryNode()
 
 	errTitle := exec.Command("cmd", "/C", "title", CurrentNode.Domain).Run()
@@ -25,11 +25,11 @@ func Create() {
 	log.Println("Current node info:", CurrentNode)
 
 	// Tell server new status
-	updateStatus()
+	res := updateStatus()
 
 	// Get all nodes
 	log.Println("Connecting to other nodes..")
-	err, solo := queryNodes()
+	err, solo := parseNodes(res)
 
 	if err {
 		log.Println("Backend is currently offline!")
@@ -41,10 +41,11 @@ func Create() {
 	} else {
 
 		// Connect to all nodes
-		for _, node := range Nodes {
+		IterateNodes(func(_ int64, node Node) bool {
 			log.Println("Connecting to node " + node.Domain + "...")
 			ConnectToNode(node)
-		}
+			return true
+		})
 	}
 
 	log.Println("Updated node status to online.")
@@ -52,8 +53,9 @@ func Create() {
 }
 
 // updateStatus updates the node status to online
-func updateStatus() {
+func updateStatus() map[string]interface{} {
 	res, err := util.PostRequest("/node/status/online", fiber.Map{
+		"id":    util.NODE_ID,
 		"token": util.NODE_TOKEN,
 	})
 
@@ -66,4 +68,6 @@ func updateStatus() {
 		log.Println("This node may not be registered..")
 		os.Exit(1)
 	}
+
+	return res
 }

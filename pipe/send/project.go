@@ -19,7 +19,7 @@ func sendToProject(message pipe.Message, msg []byte) error {
 		if member != message.Channel.Sender {
 
 			// Send to member
-			pipe.NodeConnections[node].Write(context.Background(), websocket.MessageText, msg)
+			pipe.GetConnection(node).Write(context.Background(), websocket.MessageText, msg)
 		}
 
 	}

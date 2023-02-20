@@ -20,9 +20,10 @@ func sendBroadcast(message pipe.Message, msg []byte) error {
 	}
 
 	// Send to other nodes
-	for _, node := range pipe.NodeConnections {
+	pipe.IterateConnections(func(_ int64, node *websocket.Conn) bool {
 		node.Write(context.Background(), websocket.MessageText, msg)
-	}
+		return true
+	})
 
 	return nil
 }
