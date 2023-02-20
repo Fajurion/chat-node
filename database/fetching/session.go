@@ -3,6 +3,6 @@ package fetching
 type Session struct {
 	ID uint `json:"id" gorm:"primaryKey"`
 
-	Token string `json:"session" gorm:"not null"`
-	Fetch uint   `json:"fetch" gorm:"not null"` // Last time the session was used
+	Token     string `json:"token" gorm:"not null"`
+	LastFetch int64  `json:"fetch" gorm:"type:bigint"` // Last time the session was used
 }

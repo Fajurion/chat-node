@@ -4,6 +4,7 @@ import (
 	"chat-node/bridge"
 	"chat-node/handler"
 	"chat-node/service"
+	"log"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -14,6 +15,8 @@ func SetupRoutes(router fiber.Router) {
 
 	// Inject a middleware to check if the request is a websocket upgrade request
 	router.Use("/", func(c *fiber.Ctx) error {
+		log.Println("conn")
+
 		if websocket.IsWebSocketUpgrade(c) {
 
 			// Check if the request has a token
@@ -51,7 +54,7 @@ type Message struct {
 func ws(conn *websocket.Conn) {
 	tk := conn.Locals("tk").(bridge.ConnectionToken)
 
-	bridge.AddClient(conn, tk.UserID, tk.Session)
+	bridge.AddClient(conn, tk.UserID, tk.Session, tk.Username, tk.Tag)
 	defer bridge.Remove(tk.UserID, tk.Session)
 
 	service.User(bridge.Get(tk.UserID, tk.Session))

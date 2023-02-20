@@ -12,6 +12,8 @@ type intializeRequest struct {
 	NodeToken string `json:"node_token"`
 	Session   uint64 `json:"session"`
 	UserID    int64  `json:"user_id"`
+	Username  string `json:"username"`
+	Tag       string `json:"tag"`
 }
 
 func initializeConnection(c *fiber.Ctx) error {
@@ -33,9 +35,11 @@ func initializeConnection(c *fiber.Ctx) error {
 		return requests.FailedRequest(c, "too.many.connections", nil)
 	}
 
-	bridge.AddToken(tk, req.UserID, req.Session)
+	bridge.AddToken(tk, req.UserID, req.Session, req.Username, req.Tag)
 
 	return c.JSON(fiber.Map{
-		"token": tk,
+		"success": true,
+		"load":    0,
+		"token":   tk,
 	})
 }

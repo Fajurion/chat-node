@@ -39,7 +39,9 @@ func User(client *bridge.Client) {
 
 	// Existing device
 	var latest fetching.Session
-	if err := database.DBConn.Where("account = ?", account).Order("fetch DESC").Take(&latest).Error; err != nil {
+	if err := database.DBConn.Where(&fetching.Session{
+		ID: uint(session),
+	}).Order("last_fetch DESC").Take(&latest).Error; err != nil {
 		latest = current
 	}
 
@@ -50,7 +52,7 @@ func User(client *bridge.Client) {
 	}
 
 	var messageList []conversations.Message
-	if err := database.DBConn.Where("conversation IN ?", conversationList).Where("creation > ?", current.Fetch).Find(&messageList).Error; err != nil {
+	if err := database.DBConn.Where("conversation IN ?", conversationList).Where("creation > ?", current.LastFetch).Find(&messageList).Error; err != nil {
 		return
 	}
 

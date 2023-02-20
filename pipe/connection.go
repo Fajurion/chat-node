@@ -69,11 +69,7 @@ func ConnectionExists(node int64) bool {
 
 	// Check if connection exists
 	_, ok := nodeConnections.Get(node)
-	if !ok {
-		return false
-	}
-
-	return true
+	return ok
 }
 
 func GetConnection(node int64) *websocket.Conn {

@@ -35,7 +35,7 @@ func (c *Client) IsExpired() bool {
 // User ID -> Token -> Client
 var Connections = hashmap.New[int64, *hashmap.Map[uint64, Client]]()
 
-func AddClient(conn *websocket.Conn, id int64, session uint64) {
+func AddClient(conn *websocket.Conn, id int64, session uint64, username string, tag string) {
 
 	if _, ok := Connections.Get(id); !ok {
 		Connections.Insert(id, hashmap.New[uint64, Client]())
@@ -54,7 +54,11 @@ func AddClient(conn *websocket.Conn, id int64, session uint64) {
 
 func Remove(id int64, session uint64) {
 
-	clients, _ := Connections.Get(id)
+	clients, ok := Connections.Get(id)
+
+	if !ok {
+		return
+	}
 
 	clients.Del(session)
 
@@ -94,7 +98,10 @@ func Get(id int64, session uint64) *Client {
 }
 
 func GetConnections(id int64) int {
-	clients, _ := Connections.Get(id)
+	clients, ok := Connections.Get(id)
+	if !ok {
+		return 0
+	}
 
 	return clients.Len()
 }

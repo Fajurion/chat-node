@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chat-node/database"
 	"chat-node/handler"
 	handlerCreate "chat-node/handler/create"
 	"chat-node/pipe"
@@ -18,6 +19,9 @@ func main() {
 	if !setup.Setup() {
 		return
 	}
+
+	// Connect to the database
+	database.Connect()
 
 	// Create fiber app
 	app := fiber.New(fiber.Config{
