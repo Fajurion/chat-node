@@ -22,7 +22,7 @@ func SetupRoutes(router fiber.Router) {
 			// Parse request
 			var req pipe.AdoptionRequest
 			if err := sonic.Unmarshal([]byte(token), &req); err != nil {
-				return c.SendStatus(fiber.StatusUnauthorized)
+				return c.SendStatus(fiber.StatusBadRequest)
 			}
 
 			// Check if the token is valid

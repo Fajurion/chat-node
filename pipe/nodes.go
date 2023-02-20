@@ -24,6 +24,10 @@ var nodes = hashmap.New[int64, Node]()
 
 func parseNodes(res map[string]interface{}) (bool, bool) {
 
+	if res["nodes"] == nil {
+		return false, true
+	}
+
 	nodeList := res["nodes"].([]interface{})
 
 	for _, node := range nodeList {

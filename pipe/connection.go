@@ -22,8 +22,8 @@ func ConnectToNode(node Node) {
 
 	// Marshal current node
 	nodeBytes, err := sonic.Marshal(AdoptionRequest{
-		Token:    util.NODE_TOKEN,
-		Adopting: node,
+		Token:    node.Token,
+		Adopting: CurrentNode,
 	})
 	if err != nil {
 		return
