@@ -71,6 +71,32 @@ func PostRaw(url string, body map[string]interface{}) (map[string]interface{}, e
 	return data, nil
 }
 
+type NormalResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
+func PostBytes(url string, body map[string]interface{}) (string, error) {
+	return PostBytesRaw(BasePath+url, body)
+}
+
+func PostBytesRaw(url string, body map[string]interface{}) (string, error) {
+
+	req, _ := sonic.Marshal(body)
+
+	reader := strings.NewReader(string(req))
+
+	res, err := http.Post(url, "application/json", reader)
+	if err != nil {
+		return "", err
+	}
+
+	buf := new(strings.Builder)
+	_, err = io.Copy(buf, res.Body)
+
+	return buf.String(), err
+}
+
 func First(a interface{}, _ interface{}) interface{} {
 	return a
 }

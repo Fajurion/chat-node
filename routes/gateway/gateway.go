@@ -57,7 +57,9 @@ func ws(conn *websocket.Conn) {
 	bridge.AddClient(conn, tk.UserID, tk.Session, tk.Username, tk.Tag)
 	defer bridge.Remove(tk.UserID, tk.Session)
 
-	service.User(bridge.Get(tk.UserID, tk.Session))
+	if !service.User(bridge.Get(tk.UserID, tk.Session)) {
+		return
+	}
 
 	for {
 		// Read message as text

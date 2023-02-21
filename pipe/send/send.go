@@ -3,6 +3,7 @@ package send
 import (
 	"chat-node/bridge"
 	"chat-node/pipe"
+	"chat-node/pipe/receive"
 
 	"github.com/bytedance/sonic"
 )
@@ -19,6 +20,8 @@ func Pipe(message pipe.Message) error {
 		bridge.Send(message.Channel.Sender, msg)
 	}
 
+	receive.Handle(message)
+
 	switch message.Channel.Channel {
 	case "project":
 		return sendToProject(message, msg)
@@ -28,10 +31,6 @@ func Pipe(message pipe.Message) error {
 
 	case "p2p":
 		return sendP2P(message, msg)
-
-	case "client":
-		bridge.Send(message.Channel.Target[0], msg)
-		return nil
 	}
 
 	return nil

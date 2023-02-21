@@ -2,6 +2,7 @@ package adoption
 
 import (
 	"chat-node/pipe"
+	"chat-node/pipe/receive"
 	"chat-node/util"
 	"log"
 
@@ -78,9 +79,7 @@ func ws(conn *websocket.Conn) {
 				return
 			}
 
-			// Send message to node
-			log.Println("Received message:", message)
-
+			receive.Handle(message)
 		}
 	}
 

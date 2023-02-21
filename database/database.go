@@ -17,7 +17,7 @@ func Connect() {
 	url := "host=localhost user=postgres password=deinemutter123 dbname=chat port=5432"
 
 	db, err := gorm.Open(postgres.Open(url), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Error),
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 
 	if err != nil {

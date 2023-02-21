@@ -55,10 +55,3 @@ func BroadcastChannel(sender int64, receivers []int64) Channel {
 		Target:  receivers,
 	}
 }
-
-func ClientChannel(receiver int64) Channel {
-	return Channel{
-		Channel: "client",
-		Target:  []int64{receiver},
-	}
-}

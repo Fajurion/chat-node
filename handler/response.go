@@ -6,12 +6,9 @@ import (
 )
 
 func Response(client int64, action string, data map[string]interface{}) {
-	send.Pipe(pipe.Message{
-		Channel: pipe.ClientChannel(client),
-		Event: pipe.Event{
-			Name: action,
-			Data: data,
-		},
+	send.Client(client, pipe.Event{
+		Name: action,
+		Data: data,
 	})
 }
 
@@ -34,4 +31,15 @@ func ErrorResponse(message Message, err string) {
 		"success": false,
 		"message": err,
 	})
+}
+
+func (message *Message) ValidateForm(fields ...string) bool {
+
+	for _, field := range fields {
+		if message.Data[field] == nil {
+			return true
+		}
+	}
+
+	return false
 }

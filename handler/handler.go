@@ -42,7 +42,9 @@ func TestConnection() {
 				Channel: pipe.BroadcastChannel(1, []int64{2}),
 				Event: pipe.Event{
 					Name: "ping",
-					Data: map[string]interface{}{},
+					Data: map[string]interface{}{
+						"node": pipe.CurrentNode.ID,
+					},
 				},
 			})
 		}

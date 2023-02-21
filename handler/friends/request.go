@@ -9,7 +9,18 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// Action: friends
 func friendRequest(message handler.Message) {
+	defer func() {
+		if err := recover(); err != nil {
+			handler.ErrorResponse(message, "internal")
+		}
+	}()
+
+	if message.ValidateForm("username", "tag") {
+		handler.ErrorResponse(message, "invalid")
+		return
+	}
 
 	username := message.Data["username"].(string)
 	tag := message.Data["tag"].(string)

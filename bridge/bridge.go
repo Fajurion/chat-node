@@ -44,9 +44,11 @@ func AddClient(conn *websocket.Conn, id int64, session uint64, username string, 
 	clients, _ := Connections.Get(id)
 
 	clients.Insert(session, Client{
-		Conn:    conn,
-		ID:      id,
-		Session: session,
+		Conn:     conn,
+		ID:       id,
+		Session:  session,
+		Username: username,
+		Tag:      tag,
 	})
 
 	Connections.Set(id, clients)
@@ -70,7 +72,11 @@ func Remove(id int64, session uint64) {
 }
 
 func Send(id int64, msg []byte) {
-	clients, _ := Connections.Get(id)
+	clients, ok := Connections.Get(id)
+
+	if !ok {
+		return
+	}
 
 	clients.Range(func(session uint64, client Client) bool {
 
