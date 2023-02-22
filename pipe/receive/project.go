@@ -15,7 +15,7 @@ func receiveProject(message pipe.Message, msg []byte) {
 
 	// Send to receiver
 	for member := range pj.Members {
-		if member != message.Channel.Sender {
+		if member != message.Event.Sender {
 			bridge.Send(member, msg)
 		}
 	}

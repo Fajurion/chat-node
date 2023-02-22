@@ -17,7 +17,7 @@ func Pipe(message pipe.Message) error {
 
 	// Send to own client
 	if message.Channel.IsProject() {
-		bridge.Send(message.Channel.Sender, msg)
+		bridge.Send(message.Event.Sender, msg)
 	}
 
 	receive.Handle(message)

@@ -51,6 +51,13 @@ func Offline(node Node) {
 		return
 	}
 
+	connection := GetConnection(node.ID)
+	connection.Close(websocket.StatusNormalClosure, "node.offline")
+
+	log.Println("Outgoing event stream to node", node.ID, "disconnected.")
+	nodeConnections.Del(node.ID)
+	nodes.Del(node.ID)
+
 	_, err := util.PostRequest("/node/status/offline", fiber.Map{
 		"token": node.Token,
 	})
@@ -58,11 +65,6 @@ func Offline(node Node) {
 	if err != nil {
 		log.Println("Failed to report offline status. Is the backend online?")
 	}
-
-	connection := GetConnection(node.ID)
-	connection.Close(websocket.StatusNormalClosure, "node.offline")
-
-	nodeConnections.Del(node.ID)
 }
 
 func ConnectionExists(node int64) bool {

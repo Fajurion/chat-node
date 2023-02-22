@@ -11,8 +11,8 @@ import (
 
 func sendP2P(message pipe.Message, msg []byte) error {
 
-	if _, ok := bridge.Connections.Get(message.Channel.Sender); ok {
-		bridge.Send(message.Channel.Sender, msg)
+	if _, ok := bridge.Connections.Get(message.Event.Sender); ok {
+		bridge.Send(message.Event.Sender, msg)
 		return nil
 	}
 

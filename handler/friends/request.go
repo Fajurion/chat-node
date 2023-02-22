@@ -11,12 +11,6 @@ import (
 
 // Action: friends
 func friendRequest(message handler.Message) {
-	defer func() {
-		if err := recover(); err != nil {
-			handler.ErrorResponse(message, "internal")
-		}
-	}()
-
 	if message.ValidateForm("username", "tag") {
 		handler.ErrorResponse(message, "invalid")
 		return
@@ -26,6 +20,7 @@ func friendRequest(message handler.Message) {
 	tag := message.Data["tag"].(string)
 
 	res, err := util.PostRequest("/account/friends/request/create", fiber.Map{
+		"id":       util.NODE_ID,
 		"token":    util.NODE_TOKEN,
 		"session":  message.Client.Session,
 		"username": username,
@@ -39,7 +34,7 @@ func friendRequest(message handler.Message) {
 	success := res["success"].(bool)
 
 	if !success {
-		handler.ErrorResponse(message, res["message"].(string))
+		handler.ErrorResponse(message, res["error"].(string))
 		return
 	}
 
@@ -63,9 +58,10 @@ func friendRequest(message handler.Message) {
 		handler.StatusResponse(message, "accepted")
 
 		send.Socketless(nodeEntity, pipe.Message{
-			Channel: pipe.BroadcastChannel(message.Client.ID, []int64{friend}),
+			Channel: pipe.BroadcastChannel([]int64{friend}),
 			Event: pipe.Event{
-				Name: "friend_request",
+				Sender: message.Client.ID,
+				Name:   "friend_request",
 				Data: map[string]interface{}{
 					"status":   "accepted",
 					"username": message.Client.Username,
@@ -79,9 +75,10 @@ func friendRequest(message handler.Message) {
 		handler.StatusResponse(message, "sent")
 
 		send.Socketless(nodeEntity, pipe.Message{
-			Channel: pipe.BroadcastChannel(message.Client.ID, []int64{friend}),
+			Channel: pipe.BroadcastChannel([]int64{friend}),
 			Event: pipe.Event{
-				Name: "friend_request",
+				Sender: message.Client.ID,
+				Name:   "friend_request",
 				Data: map[string]interface{}{
 					"status":   "sent",
 					"username": message.Client.Username,

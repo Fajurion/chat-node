@@ -1,12 +1,12 @@
 package pipe
 
 type Event struct {
-	Name string                 `json:"name"`
-	Data map[string]interface{} `json:"data"`
+	Sender int64                  `json:"sender"` // User ID (0 for system)
+	Name   string                 `json:"name"`
+	Data   map[string]interface{} `json:"data"`
 }
 
 type Channel struct {
-	Sender  int64   `json:"sender"`  // User ID (0 for system)
 	Channel string  `json:"channel"` // "project", "event"
 	Target  []int64 `json:"target"`  // Project ID or User ID
 }
@@ -32,26 +32,23 @@ func (c Channel) IsSocketless() bool {
 	return c.Channel == "socketless"
 }
 
-func P2PChannel(sender int64, receiver int64, receiverNode int64) Channel {
+func P2PChannel(receiver int64, receiverNode int64) Channel {
 	return Channel{
 		Channel: "p2p",
-		Sender:  sender,
 		Target:  []int64{receiver, receiverNode},
 	}
 }
 
-func ProjectChannel(sender int64, project int64) Channel {
+func ProjectChannel(project int64) Channel {
 	return Channel{
 		Channel: "project",
-		Sender:  sender,
 		Target:  []int64{project},
 	}
 }
 
-func BroadcastChannel(sender int64, receivers []int64) Channel {
+func BroadcastChannel(receivers []int64) Channel {
 	return Channel{
 		Channel: "broadcast",
-		Sender:  sender,
 		Target:  receivers,
 	}
 }

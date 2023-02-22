@@ -2,6 +2,7 @@ package receive
 
 import (
 	"chat-node/pipe"
+	"log"
 
 	"github.com/bytedance/sonic"
 )
@@ -13,6 +14,8 @@ func Handle(message pipe.Message) {
 	if err != nil {
 		return
 	}
+
+	log.Printf("%s: %d: %s", message.Channel.Channel, message.Event.Sender, message.Event.Name)
 
 	switch message.Channel.Channel {
 	case "broadcast":

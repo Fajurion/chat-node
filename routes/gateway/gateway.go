@@ -32,6 +32,10 @@ func SetupRoutes(router fiber.Router) {
 				return c.SendStatus(fiber.StatusBadRequest)
 			}
 
+			if bridge.ExistsConnection(tk.UserID, tk.Session) {
+				return c.SendStatus(fiber.StatusConflict)
+			}
+
 			bridge.RemoveToken(token)
 
 			// Set the token as a local variable
@@ -58,6 +62,7 @@ func ws(conn *websocket.Conn) {
 	defer bridge.Remove(tk.UserID, tk.Session)
 
 	if !service.User(bridge.Get(tk.UserID, tk.Session)) {
+		log.Println("Something's wrong with the user")
 		return
 	}
 

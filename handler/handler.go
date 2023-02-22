@@ -17,15 +17,30 @@ type Message struct {
 var Routes map[string]func(Message)
 
 func Handle(message Message) bool {
+	defer func() {
+		if err := recover(); err != nil {
+			ErrorResponse(message, "internal")
+		}
+	}()
 
 	// Check if the action exists
 	if Routes[message.Action] == nil {
 		return false
 	}
 
-	go Routes[message.Action](message)
+	go Route(message.Action, message)
 
 	return true
+}
+
+func Route(action string, message Message) {
+	defer func() {
+		if err := recover(); err != nil {
+			ErrorResponse(message, "invalid")
+		}
+	}()
+
+	Routes[message.Action](message)
 }
 
 func Initialize() {
@@ -39,9 +54,10 @@ func TestConnection() {
 
 			// Send ping
 			send.Pipe(pipe.Message{
-				Channel: pipe.BroadcastChannel(1, []int64{2}),
+				Channel: pipe.BroadcastChannel([]int64{1, 3}),
 				Event: pipe.Event{
-					Name: "ping",
+					Sender: 0,
+					Name:   "ping",
 					Data: map[string]interface{}{
 						"node": pipe.CurrentNode.ID,
 					},

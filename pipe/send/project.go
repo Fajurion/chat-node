@@ -16,7 +16,7 @@ func sendToProject(message pipe.Message, msg []byte) error {
 	}
 
 	for member, node := range pj.Members {
-		if member != message.Channel.Sender {
+		if member != message.Event.Sender {
 
 			// Send to member
 			pipe.GetConnection(node).Write(context.Background(), websocket.MessageText, msg)

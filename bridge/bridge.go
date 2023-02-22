@@ -96,6 +96,16 @@ func SendMessage(conn *websocket.Conn, msg []byte) {
 	conn.WriteMessage(websocket.TextMessage, msg)
 }
 
+func ExistsConnection(id int64, session uint64) bool {
+	clients, ok := Connections.Get(id)
+	if !ok {
+		return false
+	}
+
+	_, ok = clients.Get(session)
+	return ok
+}
+
 func Get(id int64, session uint64) *Client {
 	clients, _ := Connections.Get(id)
 	client, _ := clients.Get(session)

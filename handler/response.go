@@ -7,8 +7,9 @@ import (
 
 func Response(client int64, action string, data map[string]interface{}) {
 	send.Client(client, pipe.Event{
-		Name: action,
-		Data: data,
+		Sender: 0,
+		Name:   action,
+		Data:   data,
 	})
 }
 

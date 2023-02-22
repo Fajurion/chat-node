@@ -13,6 +13,8 @@ import (
 
 func SetupRoutes(router fiber.Router) {
 
+	router.Post("/socketless", socketless)
+
 	// Inject a middleware to check if the request is a websocket upgrade request
 	router.Use("/", func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
@@ -51,6 +53,7 @@ func ws(conn *websocket.Conn) {
 
 	// Check if event connection is already open
 	if !pipe.ConnectionExists(node.ID) {
+		log.Println("Building outgoing event stream to node", node.ID)
 		go pipe.ConnectToNode(node)
 	}
 
