@@ -5,6 +5,10 @@ import (
 	"chat-node/pipe/send"
 )
 
+func NormalResponse(message Message, data map[string]interface{}) {
+	Response(message.Client.ID, message.Action, data)
+}
+
 func Response(client int64, action string, data map[string]interface{}) {
 	send.Client(client, pipe.Event{
 		Sender: 0,

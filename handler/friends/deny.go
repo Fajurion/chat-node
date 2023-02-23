@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// Action: fr_rq_deny
 func denyFriendRequest(message handler.Message) {
 
 	if message.ValidateForm("id") {

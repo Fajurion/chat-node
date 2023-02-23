@@ -7,6 +7,8 @@ import (
 	"chat-node/pipe"
 	"chat-node/routes"
 	"chat-node/setup"
+	"chat-node/util"
+	"log"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -28,6 +30,8 @@ func main() {
 		JSONEncoder: sonic.Marshal,
 		JSONDecoder: sonic.Unmarshal,
 	})
+
+	log.Println(util.GenerateToken(200))
 
 	app.Use(logger.New())
 
