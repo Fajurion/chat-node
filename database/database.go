@@ -14,7 +14,7 @@ import (
 var DBConn *gorm.DB
 
 func Connect() {
-	url := "host=localhost user=postgres password=deinemutter123 dbname=chat port=5432"
+	url := "host=" + DB_HOST + " user=" + DB_USERNAME + " password=" + DB_PASSWORD + " dbname=" + DB_DATABASE + " port=" + DB_PORT
 
 	db, err := gorm.Open(postgres.Open(url), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Error),

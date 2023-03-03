@@ -75,15 +75,21 @@ func User(client *bridge.Client) bool {
 	}
 
 	// Check if the user has any new messages
-	var conversationList []uint
-	if database.DBConn.Model(&conversations.Member{}).Select("conversation").Where("account = ?", account).Find(&conversationList).Error != nil {
+	var messageList []conversations.Message
+	if database.DBConn.Raw("SELECT * FROM messages AS ms1 WHERE creation > ? AND EXISTS ( SELECT conversation FROM members AS mem1 WHERE account = ? AND mem1.conversation = ms1.conversation )", current.LastFetch, account).Scan(&messageList).Error != nil {
 		return false
 	}
 
-	var messageList []conversations.Message
-	if database.DBConn.Where("conversation IN ?", conversationList).Where("creation > ?", current.LastFetch).Find(&messageList).Error != nil {
-		return false
-	}
+	/*
+		var conversationList []uint
+		if database.DBConn.Model(&conversations.Member{}).Select("conversation").Where("account = ?", account).Find(&conversationList).Error != nil {
+			return false
+		}
+
+		if database.DBConn.Where("conversation IN ?", conversationList).Where("creation > ?", current.LastFetch).Find(&messageList).Error != nil {
+			return false
+		}
+	*/
 
 	// Save the session
 	latest.LastFetch = time.Now().UnixMilli()
