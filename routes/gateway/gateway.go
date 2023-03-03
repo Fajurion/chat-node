@@ -68,32 +68,25 @@ func ws(conn *websocket.Conn) {
 
 	for {
 		// Read message as text
-		mtype, msg, err := conn.ReadMessage()
+		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			break
 		}
 
-		// Broadcast msg
-		if mtype == websocket.TextMessage {
+		// Unmarshal the event
+		var message Message
+		err = sonic.UnmarshalString(string(msg), &message)
+		if err != nil {
+			return
+		}
 
-			// Unmarshal the event
-			var message Message
-			err := sonic.UnmarshalString(string(msg), &message)
-			if err != nil {
-				return
-			}
-
-			// Handle the event
-			if !handler.Handle(handler.Message{
-				Client: bridge.Get(tk.UserID, tk.Session),
-				Data:   message.Data,
-				Action: message.Action,
-			}) {
-				return
-			}
-
-		} else {
-			bridge.Remove(tk.UserID, tk.Session)
+		// Handle the event
+		if !handler.Handle(handler.Message{
+			Client: bridge.Get(tk.UserID, tk.Session),
+			Data:   message.Data,
+			Action: message.Action,
+		}) {
+			return
 		}
 	}
 }

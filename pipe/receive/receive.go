@@ -21,8 +21,8 @@ func Handle(message pipe.Message) {
 	case "broadcast":
 		receiveBroadcast(message, msg)
 
-	case "project":
-		receiveProject(message, msg)
+	case "conversation":
+		receiveConversation(message, msg)
 
 	case "p2p":
 		receiveP2P(message, msg)

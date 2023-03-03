@@ -1,5 +1,7 @@
 package conversations
 
+import "chat-node/database/fetching"
+
 type Member struct {
 	ID uint `json:"id" gorm:"primaryKey"`
 
@@ -8,6 +10,9 @@ type Member struct {
 	// 1 - member, 2 - admin, 3 - owner
 	Role    uint `json:"role" gorm:"not null"`
 	Account uint `json:"account" gorm:"not null"`
+
+	// Relationships
+	Status fetching.Status `json:"-" gorm:"foreignKey:Account"`
 }
 
 const RoleMember = 1

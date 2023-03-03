@@ -23,8 +23,8 @@ func Pipe(message pipe.Message) error {
 	receive.Handle(message)
 
 	switch message.Channel.Channel {
-	case "project":
-		return sendToProject(message, msg)
+	case "conversation":
+		return sendToConversation(message, msg)
 
 	case "broadcast":
 		return sendBroadcast(message, msg)

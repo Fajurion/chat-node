@@ -9,6 +9,7 @@ type Event struct {
 type Channel struct {
 	Channel string  `json:"channel"` // "project", "event"
 	Target  []int64 `json:"target"`  // Project ID or User ID
+	Nodes   []int64 `json:"-"`       // Nodes to send to (only for conversation channel)
 }
 
 type Message struct {
@@ -28,10 +29,6 @@ func (c Channel) IsBroadcast() bool {
 	return c.Channel == "broadcast"
 }
 
-func (c Channel) IsSocketless() bool {
-	return c.Channel == "socketless"
-}
-
 func P2PChannel(receiver int64, receiverNode int64) Channel {
 	return Channel{
 		Channel: "p2p",
@@ -39,10 +36,11 @@ func P2PChannel(receiver int64, receiverNode int64) Channel {
 	}
 }
 
-func ProjectChannel(project int64) Channel {
+func Conversation(receivers []int64, nodes []int64) Channel {
 	return Channel{
-		Channel: "project",
-		Target:  []int64{project},
+		Channel: "conversation",
+		Target:  receivers,
+		Nodes:   nodes,
 	}
 }
 
