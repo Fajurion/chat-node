@@ -74,6 +74,8 @@ func User(client *bridge.Client) bool {
 		latest = current
 	}
 
+	// TODO: Get new conversations since last fetch
+
 	// Check if the user has any new messages
 	var messageList []conversations.Message
 	if database.DBConn.Raw("SELECT * FROM messages AS ms1 WHERE creation > ? AND EXISTS ( SELECT conversation FROM members AS mem1 WHERE account = ? AND mem1.conversation = ms1.conversation )", current.LastFetch, account).Scan(&messageList).Error != nil {
