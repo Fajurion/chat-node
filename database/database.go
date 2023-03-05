@@ -5,6 +5,7 @@ import (
 	"chat-node/database/fetching"
 	"log"
 	"time"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -13,14 +14,7 @@ import (
 var DBConn *gorm.DB
 
 func Connect() {
-	credentials := credentials_model{
-		DB_USERNAME : "postgres",
-		DB_PASSWORD : "password",
-		DB_HOST : "localhost",
-		DB_PORT : "5432",
-		DB_DATABASE : "node_backend",
-	}
-	url := "host=" + credentials.DB_HOST + " user=" + credentials.DB_USERNAME + " password=" + credentials.DB_PASSWORD + " dbname=" + credentials.DB_DATABASE + " port=" + credentials.DB_PORT
+	url := "host=" + DB_HOST + " user=" + DB_USERNAME + " password=" + DB_PASSWORD + " dbname=" + DB_DATABASE + " port=" + DB_PORT
 
 	db, err := gorm.Open(postgres.Open(url), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Error),
