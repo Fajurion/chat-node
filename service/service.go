@@ -67,14 +67,21 @@ func User(client *bridge.Client) bool {
 	}
 
 	// Existing device
-	var latest fetching.Session
-	if err := database.DBConn.Where(&fetching.Session{
-		ID: session,
-	}).Order("last_fetch DESC").Take(&latest).Error; err != nil {
-		latest = current
+
+	// Get new conversations
+	var conversationList []conversations.Conversation
+	if database.DBConn.Where("created_at > ?", current.LastFetch).Take(&conversationList).Error != nil {
+		return false
 	}
 
-	// TODO: Get new conversations since last fetch
+	// Send the conversations to the user
+	client.SendEvent(pipe.Event{
+		Name: "setup",
+		Data: map[string]interface{}{
+			"message":       "conversations",
+			"conversations": conversationList,
+		},
+	})
 
 	// Check if the user has any new messages
 	var messageList []conversations.Message
@@ -94,16 +101,18 @@ func User(client *bridge.Client) bool {
 	*/
 
 	// Save the session
-	latest.LastFetch = time.Now().UnixMilli()
-	if database.DBConn.Model(&latest).Update("last_fetch", latest.LastFetch).Update("node", pipe.CurrentNode.ID).Error != nil {
+	current.LastFetch = time.Now().UnixMilli()
+	current.Node = pipe.CurrentNode.ID
+	if database.DBConn.Save(&current).Error != nil {
 		bridge.Remove(client.ID, client.Session)
 		return false
 	}
 
 	// Send the messages to the user
 	client.SendEvent(pipe.Event{
-		Name: "messages",
+		Name: "setup",
 		Data: map[string]interface{}{
+			"message":  "messages",
 			"messages": messageList,
 		},
 	})

@@ -11,12 +11,13 @@ import (
 // Action: conv_open
 func openConversation(message handler.Message) {
 
-	if message.ValidateForm("user", "members") {
+	if message.ValidateForm("user", "members", "data") {
 		handler.ErrorResponse(message, "invalid")
 		return
 	}
 
 	members := message.Data["members"].([]float64)
+	data := message.Data["data"].(string)
 
 	// Check if all users are friends
 	res, err := util.PostRequest("/account/friends/check", map[string]interface{}{
@@ -53,6 +54,7 @@ func openConversation(message handler.Message) {
 
 	var conversation = conversations.Conversation{
 		Creator: message.Client.ID,
+		Data:    data,
 	}
 	if database.DBConn.Create(&conversation).Error != nil {
 		handler.ErrorResponse(message, "server.error")
