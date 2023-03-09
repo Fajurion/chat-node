@@ -14,11 +14,10 @@ func User(client *bridge.Client) bool {
 	account := client.ID
 
 	client.SendEvent(pipe.Event{
-		Name: "setup",
+		Name: "setup_wel",
 		Data: map[string]interface{}{
-			"message":  "welcome",
-			"username": client.Username,
-			"tag":      client.Tag,
+			"name": client.Username,
+			"tag":  client.Tag,
 		},
 	})
 
@@ -47,47 +46,42 @@ func User(client *bridge.Client) bool {
 		// TODO: New device (sync with old device)
 
 		// Save the session
-		if database.DBConn.Create(&fetching.Session{
+		current = fetching.Session{
 			ID:        session,
 			Account:   account,
 			Node:      pipe.CurrentNode.ID,
-			LastFetch: time.Now().UnixMilli(),
-		}).Error != nil {
+			LastFetch: 0,
+		}
+
+		if database.DBConn.Create(&current).Error != nil {
 			return false
 		}
 
 		client.SendEvent(pipe.Event{
-			Name: "setup",
+			Name: "setup_device",
 			Data: map[string]interface{}{
-				"message": "new.device",
-				"device":  client.Session,
+				"device": client.Session,
 			},
 		})
-		return true
 	}
 
 	// Existing device
 
 	// Get new conversations
 	var conversationList []conversations.Conversation
-	if database.DBConn.Where("created_at > ?", current.LastFetch).Take(&conversationList).Error != nil {
-		return false
-	}
+	database.DBConn.Where("created_at > ?", current.LastFetch).Take(&conversationList)
 
 	// Send the conversations to the user
 	client.SendEvent(pipe.Event{
-		Name: "setup",
+		Name: "setup_conv",
 		Data: map[string]interface{}{
-			"message":       "conversations",
 			"conversations": conversationList,
 		},
 	})
 
 	// Check if the user has any new messages
 	var messageList []conversations.Message
-	if database.DBConn.Raw("SELECT * FROM messages AS ms1 WHERE creation > ? AND EXISTS ( SELECT conversation FROM members AS mem1 WHERE account = ? AND mem1.conversation = ms1.conversation )", current.LastFetch, account).Scan(&messageList).Error != nil {
-		return false
-	}
+	database.DBConn.Raw("SELECT * FROM messages AS ms1 WHERE creation > ? AND EXISTS ( SELECT conversation FROM members AS mem1 WHERE account = ? AND mem1.conversation = ms1.conversation )", current.LastFetch, account).Scan(&messageList)
 
 	/*
 		var conversationList []uint
@@ -110,9 +104,8 @@ func User(client *bridge.Client) bool {
 
 	// Send the messages to the user
 	client.SendEvent(pipe.Event{
-		Name: "setup",
+		Name: "setup_msg",
 		Data: map[string]interface{}{
-			"message":  "messages",
 			"messages": messageList,
 		},
 	})

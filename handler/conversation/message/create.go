@@ -20,11 +20,7 @@ func createMessage(message handler.Message) {
 
 	conversationId := uint(message.Data["conversation"].(float64))
 	data := message.Data["data"].(string)
-	id := message.Data["id"].(string)
-
-	if id == "gen" {
-		id = util.GenerateToken(32)
-	}
+	id := util.GenerateToken(32)
 
 	if conversations.CheckSize(data) {
 		handler.ErrorResponse(message, "too.big")
@@ -55,6 +51,7 @@ func createMessage(message handler.Message) {
 		Conversation: conversation.ID,
 		Certificate:  certificate,
 		Data:         data,
+		Edited:       false,
 	}
 
 	if database.DBConn.Create(&store).Error != nil {

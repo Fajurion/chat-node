@@ -52,6 +52,7 @@ func updateMessage(message handler.Message) {
 			Conversation: conversation.ID,
 			Certificate:  certificate,
 			Data:         data,
+			Edited:       true,
 		}
 
 		if database.DBConn.Create(&chatMessage).Error != nil {
@@ -66,7 +67,7 @@ func updateMessage(message handler.Message) {
 		return
 	}
 
-	if database.DBConn.Model(&chatMessage).Update("data", data).Error != nil {
+	if database.DBConn.Model(&chatMessage).Update("data", data).Update("edited", true).Error != nil {
 		handler.ErrorResponse(message, "server.error")
 		return
 	}
@@ -87,6 +88,7 @@ func updateMessage(message handler.Message) {
 				"id":           id,
 				"conversation": conversation.ID,
 				"data":         data,
+				"edited":       true,
 			},
 		},
 	})
