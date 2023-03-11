@@ -57,7 +57,13 @@ func friendRequest(message handler.Message) {
 
 	switch action {
 	case "accept":
-		handler.StatusResponse(message, "accepted")
+		handler.NormalResponse(message, map[string]interface{}{
+			"success": true,
+			"message": "accepted",
+			"name":    username,
+			"tag":     tag,
+			"id":      friend,
+		})
 
 		send.Socketless(nodeEntity, pipe.Message{
 			Channel: pipe.BroadcastChannel([]int64{friend}),

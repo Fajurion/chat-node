@@ -7,4 +7,6 @@ import (
 func SetupActions() {
 	handler.Routes["fr_rq"] = friendRequest
 	handler.Routes["fr_rq_deny"] = denyFriendRequest
+
+	handler.Routes["fr_rem"] = removeFriend
 }
