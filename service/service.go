@@ -94,6 +94,18 @@ func User(client *bridge.Client) bool {
 		}
 	*/
 
+	// Get new actions
+	var actionList []fetching.Action
+	database.DBConn.Where("created_at > ?", current.LastFetch).Take(&actionList)
+
+	// Send the actions to the user
+	client.SendEvent(pipe.Event{
+		Name: "setup_act",
+		Data: map[string]interface{}{
+			"actions": actionList,
+		},
+	})
+
 	// Save the session
 	current.LastFetch = time.Now().UnixMilli()
 	current.Node = pipe.CurrentNode.ID

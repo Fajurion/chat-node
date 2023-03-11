@@ -4,6 +4,7 @@ import (
 	"chat-node/bridge"
 	"chat-node/pipe"
 	"chat-node/pipe/send"
+	"log"
 	"time"
 )
 
@@ -27,6 +28,8 @@ func Handle(message Message) bool {
 	if Routes[message.Action] == nil {
 		return false
 	}
+
+	log.Println("Handling message: " + message.Action)
 
 	go Route(message.Action, message)
 

@@ -29,6 +29,7 @@ func friendRequest(message handler.Message) {
 	})
 
 	if err != nil {
+		handler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -62,7 +63,7 @@ func friendRequest(message handler.Message) {
 			Channel: pipe.BroadcastChannel([]int64{friend}),
 			Event: pipe.Event{
 				Sender: message.Client.ID,
-				Name:   "friend_request",
+				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
 					"status":   "accepted",
 					"username": message.Client.Username,
@@ -79,7 +80,7 @@ func friendRequest(message handler.Message) {
 			Channel: pipe.BroadcastChannel([]int64{friend}),
 			Event: pipe.Event{
 				Sender: message.Client.ID,
-				Name:   "friend_request",
+				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
 					"status":   "sent",
 					"username": message.Client.Username,
