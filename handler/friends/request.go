@@ -71,16 +71,22 @@ func friendRequest(message handler.Message) {
 				Sender: message.Client.ID,
 				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
-					"status":   "accepted",
-					"username": message.Client.Username,
-					"tag":      message.Client.Tag,
-					"id":       message.Client.ID,
+					"status": "accepted",
+					"name":   message.Client.Username,
+					"tag":    message.Client.Tag,
+					"id":     message.Client.ID,
 				},
 			},
 		})
 
 	case "send":
-		handler.StatusResponse(message, "sent")
+		handler.NormalResponse(message, map[string]interface{}{
+			"success": true,
+			"message": "sent",
+			"name":    username,
+			"tag":     tag,
+			"id":      friend,
+		})
 
 		send.Socketless(nodeEntity, pipe.Message{
 			Channel: pipe.BroadcastChannel([]int64{friend}),
@@ -88,10 +94,10 @@ func friendRequest(message handler.Message) {
 				Sender: message.Client.ID,
 				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
-					"status":   "sent",
-					"username": message.Client.Username,
-					"tag":      message.Client.Tag,
-					"id":       message.Client.ID,
+					"status": "sent",
+					"name":   message.Client.Username,
+					"tag":    message.Client.Tag,
+					"id":     message.Client.ID,
 				},
 			},
 		})
