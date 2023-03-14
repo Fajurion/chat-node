@@ -4,20 +4,29 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/handler"
+	"chat-node/pipe"
+	"chat-node/pipe/send"
 	"chat-node/util"
 	"fmt"
+	"log"
 )
 
 // Action: conv_open
 func openConversation(message handler.Message) {
 
-	if message.ValidateForm("user", "members", "data") {
+	if message.ValidateForm("members", "data") {
 		handler.ErrorResponse(message, "invalid")
 		return
 	}
 
-	members := message.Data["members"].([]float64)
+	var members []int64
+	for _, member := range message.Data["members"].([]interface{}) {
+		members = append(members, int64(member.(float64)))
+	}
+
 	data := message.Data["data"].(string)
+
+	log.Println(members)
 
 	// Check if all users are friends
 	res, err := util.PostRequest("/account/friends/check", map[string]interface{}{
@@ -33,19 +42,25 @@ func openConversation(message handler.Message) {
 	}
 
 	if !res["success"].(bool) {
+
+		log.Println("server")
+
 		handler.ErrorResponse(message, res["error"].(string))
 		return
 	}
 
-	// Enforce limit of 10 conversations per group of users
-	slice := members[:0]
-	slice = append(slice, float64(message.Client.ID))
+	// Enforce limit of 10 conversations per user
+	members = append(members, message.Client.ID)
 
 	var conversationCount int64
-	if database.DBConn.Raw("SELECT COUNT(id) FROM conversations AS c1 WHERE EXISTS ( SELECT id FROM members AS mem1 WHERE conversation = c1.id AND mem1.id IN ? )", slice).Scan(&conversationCount).Error != nil {
+	if err := database.DBConn.Raw("SELECT COUNT(id) FROM conversations AS c1 WHERE EXISTS ( SELECT id FROM members AS mem1 WHERE conversation = c1.id AND mem1.id IN ? )", members).Scan(&conversationCount).Error; err != nil {
+
+		log.Println(err.Error())
+
 		handler.ErrorResponse(message, "server.error")
 		return
 	}
+	log.Println("conv_open")
 
 	if conversationCount >= 10 {
 		handler.ErrorResponse(message, fmt.Sprintf("limit.reached.%d", conversationCount))
@@ -56,6 +71,7 @@ func openConversation(message handler.Message) {
 		Creator: message.Client.ID,
 		Data:    data,
 	}
+
 	if database.DBConn.Create(&conversation).Error != nil {
 		handler.ErrorResponse(message, "server.error")
 		return
@@ -64,17 +80,32 @@ func openConversation(message handler.Message) {
 	for _, member := range members {
 
 		var role uint = conversations.RoleMember
-		if member == float64(message.Client.ID) {
+		if member == message.Client.ID {
 			role = conversations.RoleOwner
 		}
 
 		if database.DBConn.Create(&conversations.Member{
 			Conversation: conversation.ID,
 			Role:         role,
+			Account:      member,
 		}).Error != nil {
 			handler.ErrorResponse(message, "server.error")
 			return
 		}
+
 	}
 
+	// Let the user know that they have a new conversation
+	send.Pipe(pipe.Message{
+		Channel: pipe.BroadcastChannel(members),
+		Event: pipe.Event{
+			Name: "conv_open:l",
+			Data: map[string]interface{}{
+				"success":      true,
+				"conversation": conversation,
+			},
+		},
+	})
+
+	handler.SuccessResponse(message)
 }
