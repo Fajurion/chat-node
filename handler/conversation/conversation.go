@@ -7,6 +7,7 @@ import (
 
 func SetupActions() {
 	handler.Routes["conv_open"] = openConversation
+	handler.Routes["conv_mem"] = getConversationMembers
 
 	message.SetupActions()
 }

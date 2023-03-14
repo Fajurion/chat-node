@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"chat-node/database"
+	"chat-node/database/fetching"
 	"chat-node/pipe"
 	"chat-node/pipe/send"
+	"time"
 )
 
 func NormalResponse(message Message, data map[string]interface{}) {
@@ -47,4 +50,8 @@ func (message *Message) ValidateForm(fields ...string) bool {
 	}
 
 	return false
+}
+
+func SyncSession(message Message) {
+	database.DBConn.Model(&fetching.Session{}).Where("id = ?", message.Client.Session).Update("last_fetch", time.Now().UnixMilli())
 }

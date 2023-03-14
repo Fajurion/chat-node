@@ -9,6 +9,7 @@ import (
 	"chat-node/util"
 	"fmt"
 	"log"
+	"time"
 )
 
 // Action: conv_open
@@ -53,14 +54,14 @@ func openConversation(message handler.Message) {
 	members = append(members, message.Client.ID)
 
 	var conversationCount int64
-	if err := database.DBConn.Raw("SELECT COUNT(id) FROM conversations AS c1 WHERE EXISTS ( SELECT id FROM members AS mem1 WHERE conversation = c1.id AND mem1.id IN ? )", members).Scan(&conversationCount).Error; err != nil {
+	if err := database.DBConn.Raw("SELECT COUNT(*) FROM conversations AS c1 WHERE EXISTS ( SELECT id FROM members AS mem1 WHERE conversation = c1.id AND mem1.id IN ? )", members).Scan(&conversationCount).Error; err != nil {
 
 		log.Println(err.Error())
 
 		handler.ErrorResponse(message, "server.error")
 		return
 	}
-	log.Println("conv_open")
+	log.Printf("conversation count: %d", conversationCount)
 
 	if conversationCount >= 10 {
 		handler.ErrorResponse(message, fmt.Sprintf("limit.reached.%d", conversationCount))
@@ -68,8 +69,9 @@ func openConversation(message handler.Message) {
 	}
 
 	var conversation = conversations.Conversation{
-		Creator: message.Client.ID,
-		Data:    data,
+		Creator:   message.Client.ID,
+		Data:      data,
+		CreatedAt: time.Now().UnixMilli(),
 	}
 
 	if database.DBConn.Create(&conversation).Error != nil {
@@ -103,9 +105,11 @@ func openConversation(message handler.Message) {
 			Data: map[string]interface{}{
 				"success":      true,
 				"conversation": conversation,
+				"members":      members,
 			},
 		},
 	})
 
+	handler.SyncSession(message)
 	handler.SuccessResponse(message)
 }
