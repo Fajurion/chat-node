@@ -82,6 +82,23 @@ func User(client *bridge.Client) bool {
 		},
 	})
 
+	// Get members of the conversations
+	for _, conversation := range conversationList {
+		var memberList []conversations.Member
+		if database.DBConn.Where("conversation = ?", conversation.ID).Find(&memberList).Error != nil {
+			return false
+		}
+
+		// Send the members to the user
+		client.SendEvent(pipe.Event{
+			Name: "setup_mem",
+			Data: map[string]interface{}{
+				"conversation": conversation.ID,
+				"members":      memberList,
+			},
+		})
+	}
+
 	// Check if the user has any new messages
 	var messageList []conversations.Message
 	database.DBConn.Raw("SELECT * FROM messages AS ms1 WHERE creation > ? AND EXISTS ( SELECT conversation FROM members AS mem1 WHERE account = ? AND mem1.conversation = ms1.conversation )", current.LastFetch, account).Scan(&messageList)

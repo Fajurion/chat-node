@@ -50,11 +50,11 @@ func openConversation(message handler.Message) {
 		return
 	}
 
-	// Enforce limit of 10 conversations per user
+	// Enforce limit of 3 conversations per group of users
 	members = append(members, message.Client.ID)
 
 	var conversationCount int64
-	if err := database.DBConn.Raw("SELECT COUNT(*) FROM conversations AS c1 WHERE EXISTS ( SELECT id FROM members AS mem1 WHERE conversation = c1.id AND mem1.id IN ? )", members).Scan(&conversationCount).Error; err != nil {
+	if err := database.DBConn.Raw("SELECT COUNT(*) FROM conversations AS c1 WHERE EXISTS ( SELECT * FROM members WHERE conversation = c1.id AND account IN ? )", members).Scan(&conversationCount).Error; err != nil {
 
 		log.Println(err.Error())
 
@@ -63,7 +63,7 @@ func openConversation(message handler.Message) {
 	}
 	log.Printf("conversation count: %d", conversationCount)
 
-	if conversationCount >= 10 {
+	if conversationCount >= 3 {
 		handler.ErrorResponse(message, fmt.Sprintf("limit.reached.%d", conversationCount))
 		return
 	}
@@ -79,6 +79,7 @@ func openConversation(message handler.Message) {
 		return
 	}
 
+	var memberList []conversations.Member
 	for _, member := range members {
 
 		var role uint = conversations.RoleMember
@@ -86,15 +87,17 @@ func openConversation(message handler.Message) {
 			role = conversations.RoleOwner
 		}
 
-		if database.DBConn.Create(&conversations.Member{
+		var memberObj = conversations.Member{
 			Conversation: conversation.ID,
 			Role:         role,
 			Account:      member,
-		}).Error != nil {
+		}
+		if database.DBConn.Create(&memberObj).Error != nil {
 			handler.ErrorResponse(message, "server.error")
 			return
 		}
 
+		memberList = append(memberList, memberObj)
 	}
 
 	// Let the user know that they have a new conversation
@@ -105,7 +108,7 @@ func openConversation(message handler.Message) {
 			Data: map[string]interface{}{
 				"success":      true,
 				"conversation": conversation,
-				"members":      members,
+				"members":      memberList,
 			},
 		},
 	})
