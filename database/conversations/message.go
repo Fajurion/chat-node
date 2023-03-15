@@ -15,6 +15,7 @@ type Message struct {
 	Creation     int64  `json:"creation" gorm:"autoUpdateTime:milli"` // Unix timestamp (ms)
 	Data         string `json:"data" gorm:"not null"`                 // Encrypted data
 	Edited       bool   `json:"edited" gorm:"not null"`               // Edited flag
+	Sender       int64  `json:"sender" gorm:"not null"`               // Sender ID
 }
 
 var MessageOwnerKey = "KVA83skdBfR0z3RyrRSNfAk76T1APKl0ep10YzrmEcD8vcrVUS8WO39sHWTuxl6OJHiZ8gIbZcGOi0FinSomHDbTnjGIn7oBadlNX5XmSEsgxagCsAVD3oCgacPGpCI4OOefRynmp4abUwQTaCakQv9PkgjgDwyZ3w2APH47sy4sFsKhX80LbfYKapxpnC4U61PVZnPI"

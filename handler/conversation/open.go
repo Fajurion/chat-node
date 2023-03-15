@@ -113,6 +113,5 @@ func openConversation(message handler.Message) {
 		},
 	})
 
-	handler.SyncSession(message)
 	handler.SuccessResponse(message)
 }

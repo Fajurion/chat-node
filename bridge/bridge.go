@@ -1,7 +1,10 @@
 package bridge
 
 import (
+	"chat-node/database"
+	"chat-node/database/fetching"
 	"chat-node/pipe"
+	"log"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -19,6 +22,8 @@ type Client struct {
 }
 
 func (c *Client) SendEvent(event pipe.Event) {
+
+	log.Println(event.Name)
 
 	event.Sender = c.ID
 	msg, err := sonic.Marshal(event)
@@ -57,6 +62,7 @@ func AddClient(conn *websocket.Conn, id int64, session uint64, username string, 
 
 func Remove(id int64, session uint64) {
 
+	database.DBConn.Model(&fetching.Session{}).Where("id = ?", session).Update("last_fetch", time.Now().UnixMilli())
 	clients, ok := Connections.Get(id)
 
 	if !ok {

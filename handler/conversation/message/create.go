@@ -8,6 +8,7 @@ import (
 	"chat-node/pipe/send"
 	"chat-node/util"
 	"chat-node/util/requests"
+	"log"
 )
 
 // Action: conv_msg_create
@@ -51,6 +52,7 @@ func createMessage(message handler.Message) {
 		Conversation: conversation.ID,
 		Certificate:  certificate,
 		Data:         data,
+		Sender:       message.Client.ID,
 		Edited:       false,
 	}
 
@@ -66,18 +68,21 @@ func createMessage(message handler.Message) {
 		return
 	}
 
+	var event = pipe.Event{
+		Sender: message.Client.ID,
+		Name:   "conv_msg",
+		Data: map[string]interface{}{
+			"message": store,
+		},
+	}
+
+	log.Println("sending..")
+
 	send.Pipe(pipe.Message{
 		Channel: pipe.Conversation(members, nodes),
-		Event: pipe.Event{
-			Sender: message.Client.ID,
-			Name:   "conv_msg",
-			Data: map[string]interface{}{
-				"id":           id,
-				"conversation": conversation.ID,
-				"data":         data,
-			},
-		},
+		Event:   event,
 	})
+	message.Client.SendEvent(event)
 
 	handler.NormalResponse(message, map[string]interface{}{
 		"success": true,
