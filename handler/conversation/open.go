@@ -25,6 +25,11 @@ func openConversation(message handler.Message) {
 		members = append(members, int64(member.(float64)))
 	}
 
+	if len(members) > 100 {
+		handler.ErrorResponse(message, "member.limit")
+		return
+	}
+
 	data := message.Data["data"].(string)
 
 	log.Println(members)
@@ -63,7 +68,7 @@ func openConversation(message handler.Message) {
 	}
 	log.Printf("conversation count: %d", conversationCount)
 
-	if conversationCount >= 3 {
+	if conversationCount >= 1 {
 		handler.ErrorResponse(message, fmt.Sprintf("limit.reached.%d", conversationCount))
 		return
 	}
