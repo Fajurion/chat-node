@@ -12,7 +12,7 @@ import (
 // Action: fr_rq
 func friendRequest(message handler.Message) {
 
-	if message.ValidateForm("username", "tag") {
+	if message.ValidateForm("username", "tag", "signature") {
 		handler.ErrorResponse(message, "invalid")
 		return
 	}
@@ -21,11 +21,12 @@ func friendRequest(message handler.Message) {
 	tag := message.Data["tag"].(string)
 
 	res, err := util.PostRequest("/account/friends/request/create", fiber.Map{
-		"id":       util.NODE_ID,
-		"token":    util.NODE_TOKEN,
-		"session":  message.Client.Session,
-		"username": username,
-		"tag":      tag,
+		"id":        util.NODE_ID,
+		"token":     util.NODE_TOKEN,
+		"session":   message.Client.Session,
+		"username":  username,
+		"tag":       tag,
+		"signature": message.Data["signature"].(string),
 	})
 
 	if err != nil {
@@ -54,6 +55,8 @@ func friendRequest(message handler.Message) {
 		App:    uint(nodeRaw["id"].(float64)),
 	}
 	friend := int64(res["friend"].(float64))
+	signature := res["signature"].(string)
+	key := res["key"].(string)
 
 	switch action {
 	case "accept":
@@ -71,10 +74,12 @@ func friendRequest(message handler.Message) {
 				Sender: message.Client.ID,
 				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
-					"status": "accepted",
-					"name":   message.Client.Username,
-					"tag":    message.Client.Tag,
-					"id":     message.Client.ID,
+					"status":    "accepted",
+					"name":      message.Client.Username,
+					"tag":       message.Client.Tag,
+					"id":        message.Client.ID,
+					"signature": signature,
+					"key":       key,
 				},
 			},
 		})
@@ -94,13 +99,14 @@ func friendRequest(message handler.Message) {
 				Sender: message.Client.ID,
 				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
-					"status": "sent",
-					"name":   message.Client.Username,
-					"tag":    message.Client.Tag,
-					"id":     message.Client.ID,
+					"status":    "sent",
+					"name":      message.Client.Username,
+					"tag":       message.Client.Tag,
+					"id":        message.Client.ID,
+					"signature": signature,
+					"key":       key,
 				},
 			},
 		})
-
 	}
 }
