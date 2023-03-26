@@ -66,63 +66,30 @@ func User(client *bridge.Client) bool {
 		})
 	}
 
-	// Existing device
+	// Get the earliest fetch time
+	var firstFetch int64
+	database.DBConn.Raw("SELECT MIN(last_fetch) FROM sessions WHERE account = ?", account).Scan(&firstFetch)
 
 	// Get new conversations
-	var conversationList []conversations.Conversation
-	database.DBConn.Raw("SELECT * FROM conversations AS c1 WHERE created_at > ? AND EXISTS ( SELECT conversation FROM members AS mem1 WHERE account = ? AND mem1.conversation = c1.id )", current.LastFetch, account).Scan(&conversationList)
+	if !setup_conv(client, &account, &current) {
+		return false
+	}
 
-	log.Println("Conversations: ", len(conversationList))
-
-	// Send the conversations to the user
-	client.SendEvent(pipe.Event{
-		Name: "setup_conv",
-		Data: map[string]interface{}{
-			"conversations": conversationList,
-		},
-	})
-
-	// Get members of the conversations
-	for _, conversation := range conversationList {
-		var memberList []conversations.Member
-		if database.DBConn.Where("conversation = ?", conversation.ID).Find(&memberList).Error != nil {
-			return false
-		}
-
-		// Send the members to the user
-		client.SendEvent(pipe.Event{
-			Name: "setup_mem",
-			Data: map[string]interface{}{
-				"conversation": conversation.ID,
-				"members":      memberList,
-			},
-		})
+	if !setup_act(client, &current, &firstFetch) {
+		return false
 	}
 
 	// Check if the user has any new messages
 	var messageList []conversations.Message
 	database.DBConn.Raw("SELECT * FROM messages AS ms1 WHERE creation > ? AND EXISTS ( SELECT conversation FROM members AS mem1 WHERE account = ? AND mem1.conversation = ms1.conversation )", current.LastFetch, account).Scan(&messageList)
 
-	/*
-		var conversationList []uint
-		if database.DBConn.Model(&conversations.Member{}).Select("conversation").Where("account = ?", account).Find(&conversationList).Error != nil {
-			return false
-		}
+	log.Println("Messages:", messageList)
 
-		if database.DBConn.Where("conversation IN ?", conversationList).Where("creation > ?", current.LastFetch).Find(&messageList).Error != nil {
-			return false
-		}
-	*/
-
-	// Get new actions
-	var actionList []fetching.Action
-	database.DBConn.Where("created_at > ?", current.LastFetch).Take(&actionList)
-
-	// Send the actions to the user
+	// Send the messages to the user
 	client.SendEvent(pipe.Event{
-		Name: "setup_act",
+		Name: "setup_msg",
 		Data: map[string]interface{}{
-			"actions": actionList,
+			"messages": messageList,
 		},
 	})
 
@@ -133,14 +100,6 @@ func User(client *bridge.Client) bool {
 		bridge.Remove(client.ID, client.Session)
 		return false
 	}
-
-	// Send the messages to the user
-	client.SendEvent(pipe.Event{
-		Name: "setup_msg",
-		Data: map[string]interface{}{
-			"messages": messageList,
-		},
-	})
 
 	return true
 }

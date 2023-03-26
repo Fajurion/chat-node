@@ -24,10 +24,6 @@ func Setup() bool {
 	input := scanner.Text()
 	util.Testing = input == "y"
 
-	if util.Testing {
-		return true
-	}
-
 	if len(strings.Split(input, ":")) > 1 {
 		StartPort = strings.Split(input, ":")[1]
 		log.Println("Starting on port " + StartPort + "!")

@@ -3,6 +3,7 @@ package conversation
 import (
 	"chat-node/database"
 	"chat-node/database/conversations"
+	"chat-node/database/fetching"
 	"chat-node/handler"
 	"chat-node/pipe"
 	"chat-node/pipe/send"
@@ -10,12 +11,14 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/bytedance/sonic"
 )
 
 // Action: conv_open
 func openConversation(message handler.Message) {
 
-	if message.ValidateForm("members", "data") {
+	if message.ValidateForm("members", "data", "keys") {
 		handler.ErrorResponse(message, "invalid")
 		return
 	}
@@ -31,8 +34,19 @@ func openConversation(message handler.Message) {
 	}
 
 	data := message.Data["data"].(string)
+	var keys map[string]string = make(map[string]string)
 
-	log.Println(members)
+	err := sonic.UnmarshalString(message.Data["keys"].(string), &keys)
+	if err != nil {
+		handler.ErrorResponse(message, "sonic.slipped")
+		return
+	}
+
+	if len(keys) != len(members)+1 {
+		log.Println("keys", len(keys), "members", len(members))
+		handler.ErrorResponse(message, "invalid")
+		return
+	}
 
 	// Check if all users are friends
 	res, err := util.PostRequest("/account/friends/check", map[string]interface{}{
@@ -55,18 +69,15 @@ func openConversation(message handler.Message) {
 		return
 	}
 
-	// Enforce limit of 3 conversations per group of users
+	// Enforce limit of 1 conversation per group of users
 	members = append(members, message.Client.ID)
 
 	var conversationCount int64
 	if err := database.DBConn.Raw("SELECT COUNT(*) FROM conversations AS c1 WHERE EXISTS ( SELECT * FROM members WHERE conversation = c1.id AND account IN ? )", members).Scan(&conversationCount).Error; err != nil {
 
-		log.Println(err.Error())
-
 		handler.ErrorResponse(message, "server.error")
 		return
 	}
-	log.Printf("conversation count: %d", conversationCount)
 
 	if conversationCount >= 1 {
 		handler.ErrorResponse(message, fmt.Sprintf("limit.reached.%d", conversationCount))
@@ -103,6 +114,14 @@ func openConversation(message handler.Message) {
 		}
 
 		memberList = append(memberList, memberObj)
+
+		// Add stored action
+		database.DBConn.Create(&fetching.Action{
+			ID:      util.GenerateToken(32),
+			Account: member,
+			Action:  "conv_key",
+			Target:  fmt.Sprintf("%d:%s", conversation.ID, keys[fmt.Sprintf("%d", member)]),
+		})
 	}
 
 	// Let the user know that they have a new conversation
@@ -114,6 +133,7 @@ func openConversation(message handler.Message) {
 				"success":      true,
 				"conversation": conversation,
 				"members":      memberList,
+				"keys":         keys,
 			},
 		},
 	})

@@ -3,6 +3,8 @@ package handler
 import (
 	"chat-node/pipe"
 	"chat-node/pipe/send"
+	"chat-node/util"
+	"runtime/debug"
 )
 
 func NormalResponse(message Message, data map[string]interface{}) {
@@ -32,6 +34,11 @@ func StatusResponse(message Message, status string) {
 }
 
 func ErrorResponse(message Message, err string) {
+
+	if util.Testing {
+		debug.PrintStack()
+	}
+
 	Response(message.Client.ID, message.Action, map[string]interface{}{
 		"success": false,
 		"message": err,

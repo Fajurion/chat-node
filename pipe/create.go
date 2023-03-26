@@ -49,7 +49,6 @@ func Create() {
 	}
 
 	log.Println("Updated node status to online.")
-
 }
 
 // updateStatus updates the node status to online

@@ -1,6 +1,8 @@
 package friends
 
 import (
+	"chat-node/database"
+	"chat-node/database/fetching"
 	"chat-node/handler"
 	"chat-node/pipe"
 	"chat-node/pipe/send"
@@ -60,6 +62,12 @@ func friendRequest(message handler.Message) {
 
 	switch action {
 	case "accept":
+
+		// Delete stored actions for friend removal
+		database.DBConn.
+			Where("action = ? AND account IN ? AND target IN ?", "fr_rem", []int64{message.Client.ID, friend}, []int64{message.Client.ID, friend}).
+			Delete(&fetching.Action{})
+
 		handler.NormalResponse(message, map[string]interface{}{
 			"success": true,
 			"message": "accepted",

@@ -4,6 +4,7 @@ import (
 	"chat-node/database"
 	handlerCreate "chat-node/handler/create"
 	"chat-node/pipe"
+	processors "chat-node/pipe/receive/processors/create"
 	"chat-node/routes"
 	"chat-node/setup"
 	"chat-node/util"
@@ -40,6 +41,9 @@ func main() {
 
 	// Create handlers
 	handlerCreate.Create()
+
+	// Initialize processors
+	processors.SetupProcessors()
 
 	// Start fiber
 	app.Listen(pipe.CurrentNode.Domain)
