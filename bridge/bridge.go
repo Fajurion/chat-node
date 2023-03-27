@@ -4,6 +4,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/fetching"
 	"chat-node/pipe"
+	"chat-node/util"
 	"log"
 	"time"
 
@@ -63,6 +64,12 @@ func AddClient(conn *websocket.Conn, id int64, session uint64, username string, 
 func Remove(id int64, session uint64) {
 
 	database.DBConn.Model(&fetching.Session{}).Where("id = ?", session).Update("last_fetch", time.Now().UnixMilli())
+	util.PostRequest("/node/disconnect", map[string]interface{}{
+		"node":    util.NODE_ID,
+		"token":   util.NODE_TOKEN,
+		"session": session,
+	})
+
 	clients, ok := Connections.Get(id)
 
 	if !ok {

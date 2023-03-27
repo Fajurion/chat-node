@@ -3,10 +3,8 @@ package service
 import (
 	"chat-node/bridge"
 	"chat-node/database"
-	"chat-node/database/conversations"
 	"chat-node/database/fetching"
 	"chat-node/pipe"
-	"log"
 	"time"
 )
 
@@ -75,23 +73,20 @@ func User(client *bridge.Client) bool {
 		return false
 	}
 
+	// Get new actions
 	if !setup_act(client, &current, &firstFetch) {
 		return false
 	}
 
-	// Check if the user has any new messages
-	var messageList []conversations.Message
-	database.DBConn.Raw("SELECT * FROM messages AS ms1 WHERE creation > ? AND EXISTS ( SELECT conversation FROM members AS mem1 WHERE account = ? AND mem1.conversation = ms1.conversation )", current.LastFetch, account).Scan(&messageList)
+	// Get new messages
+	if !setup_mes(client, &current, &account) {
+		return false
+	}
 
-	log.Println("Messages:", messageList)
-
-	// Send the messages to the user
-	client.SendEvent(pipe.Event{
-		Name: "setup_msg",
-		Data: map[string]interface{}{
-			"messages": messageList,
-		},
-	})
+	// Get online friends
+	if !setup_fr(client, &account, &current) {
+		return false
+	}
 
 	// Save the session
 	current.LastFetch = time.Now().UnixMilli()
@@ -100,6 +95,12 @@ func User(client *bridge.Client) bool {
 		bridge.Remove(client.ID, client.Session)
 		return false
 	}
+
+	// Send the setup complete event
+	client.SendEvent(pipe.Event{
+		Name: "setup_fin",
+		Data: map[string]interface{}{},
+	})
 
 	return true
 }
