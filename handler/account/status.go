@@ -18,7 +18,7 @@ func changeStatus(message handler.Message) {
 		return
 	}
 
-	valid, err := updateStatus(message.Client, message.Data["status"].(string), true)
+	valid, err := UpdateStatus(message.Client, fetching.StatusOnline, message.Data["status"].(string), true)
 
 	if !valid {
 		handler.ErrorResponse(message, err)
@@ -31,7 +31,7 @@ func changeStatus(message handler.Message) {
 // Action: acc_on
 func setOnline(message handler.Message) {
 
-	valid, err := updateStatus(message.Client, "", false)
+	valid, err := UpdateStatus(message.Client, fetching.StatusOnline, "", false)
 
 	if !valid {
 		handler.ErrorResponse(message, err)
@@ -41,7 +41,7 @@ func setOnline(message handler.Message) {
 	handler.SuccessResponse(message)
 }
 
-func updateStatus(client *bridge.Client, status string, set bool) (bool, string) {
+func UpdateStatus(client *bridge.Client, sType uint, status string, set bool) (bool, string) {
 
 	// Send event through pipe
 	res, err := util.PostRequest("/account/friends/online", map[string]interface{}{

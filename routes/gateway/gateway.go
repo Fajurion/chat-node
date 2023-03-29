@@ -2,7 +2,9 @@ package gateway
 
 import (
 	"chat-node/bridge"
+	"chat-node/database/fetching"
 	"chat-node/handler"
+	"chat-node/handler/account"
 	"chat-node/service"
 	"log"
 
@@ -59,7 +61,14 @@ func ws(conn *websocket.Conn) {
 	tk := conn.Locals("tk").(bridge.ConnectionToken)
 
 	bridge.AddClient(conn, tk.UserID, tk.Session, tk.Username, tk.Tag)
-	defer bridge.Remove(tk.UserID, tk.Session)
+	defer func() {
+
+		// Update status
+		account.UpdateStatus(bridge.Get(tk.UserID, tk.Session), fetching.StatusOffline, "status.offline", true)
+
+		// Remove the connection from the bridge
+		bridge.Remove(tk.UserID, tk.Session)
+	}()
 
 	if !service.User(bridge.Get(tk.UserID, tk.Session)) {
 		log.Println("Something's wrong with the user")

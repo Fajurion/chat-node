@@ -16,15 +16,11 @@ func receiveBroadcast(message pipe.Message) {
 	// Send to all receivers
 	for _, tg := range message.Channel.Target {
 
-		log.Println(tg)
-
 		// Process the message
 		msg := processors.ProcessMarshal(&message, tg)
 		if msg == nil {
 			continue
 		}
-
-		log.Println(tg)
 
 		bridge.Send(tg, msg)
 	}
