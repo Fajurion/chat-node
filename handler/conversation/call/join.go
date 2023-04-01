@@ -5,6 +5,9 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/handler"
+	"chat-node/pipe"
+	"chat-node/pipe/send"
+	"chat-node/util/requests"
 	"context"
 	"fmt"
 
@@ -24,6 +27,12 @@ func join(message handler.Message) {
 
 	if !valid {
 		handler.ErrorResponse(message, "invalid")
+		return
+	}
+
+	// Check if joiner is the same as the creator
+	if claims.Ow == message.Client.ID {
+		handler.ErrorResponse(message, "no.join")
 		return
 	}
 
@@ -78,6 +87,37 @@ func join(message handler.Message) {
 		handler.ErrorResponse(message, "server.error")
 		return
 	}
+
+	// Send to the conversation
+	members, nodes, err := requests.LoadConversationDetails(uint(id))
+	if err != nil {
+		handler.ErrorResponse(message, "server.error")
+		return
+	}
+
+	// Tell others about it
+	send.Pipe(pipe.Message{
+		Event: pipe.Event{
+			Name: "c_o:l",
+			Data: map[string]interface{}{
+				"conv": id,
+			},
+		},
+		Channel: pipe.Conversation(members, nodes),
+	})
+
+	print("sending to", claims.Ow)
+
+	// Let the owner join
+	send.Pipe(pipe.Message{
+		Event: pipe.Event{
+			Name: "c_s:l",
+			Data: map[string]interface{}{
+				"conv": id,
+			},
+		},
+		Channel: pipe.BroadcastChannel([]int64{claims.Ow}),
+	})
 
 	handler.NormalResponse(message, map[string]interface{}{
 		"success": true,

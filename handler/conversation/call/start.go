@@ -15,6 +15,8 @@ func start(message handler.Message) {
 
 	if message.ValidateForm("id") {
 		handler.ErrorResponse(message, "invalid")
+
+		println("invalid form")
 		return
 	}
 
@@ -34,6 +36,8 @@ func start(message handler.Message) {
 
 	if len(res.Rooms) > 0 {
 
+		println("connecting to call")
+
 		// Connect to call
 		tk, err := calls.GetJoinToken(roomName, fmt.Sprintf("%d", message.Client.ID))
 
@@ -44,6 +48,8 @@ func start(message handler.Message) {
 
 		handler.NormalResponse(message, map[string]interface{}{
 			"success": true,
+			"call":    true,
+			"id":      id,
 			"token":   tk,
 		})
 
@@ -60,6 +66,7 @@ func start(message handler.Message) {
 
 	handler.NormalResponse(message, map[string]interface{}{
 		"success": true,
+		"call":    false,
 		"id":      id,
 		"token":   token,
 	})
