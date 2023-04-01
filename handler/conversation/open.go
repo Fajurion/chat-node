@@ -69,20 +69,7 @@ func openConversation(message handler.Message) {
 		return
 	}
 
-	// Enforce limit of 1 conversation per group of users
 	members = append(members, message.Client.ID)
-
-	var conversationCount int64
-	if err := database.DBConn.Raw("SELECT COUNT(*) FROM conversations AS c1 WHERE EXISTS ( SELECT * FROM members WHERE conversation = c1.id AND account IN ? )", members).Scan(&conversationCount).Error; err != nil {
-
-		handler.ErrorResponse(message, "server.error")
-		return
-	}
-
-	if conversationCount >= 1 {
-		handler.ErrorResponse(message, fmt.Sprintf("limit.reached.%d", conversationCount))
-		return
-	}
 
 	var conversation = conversations.Conversation{
 		Creator:   message.Client.ID,

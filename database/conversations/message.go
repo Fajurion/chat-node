@@ -1,6 +1,7 @@
 package conversations
 
 import (
+	"chat-node/database/credentials"
 	"time"
 	"unsafe"
 
@@ -18,10 +19,8 @@ type Message struct {
 	Sender       int64  `json:"sender" gorm:"not null"`               // Sender ID
 }
 
-var MessageOwnerKey = "KVA83skdBfR0z3RyrRSNfAk76T1APKl0ep10YzrmEcD8vcrVUS8WO39sHWTuxl6OJHiZ8gIbZcGOi0FinSomHDbTnjGIn7oBadlNX5XmSEsgxagCsAVD3oCgacPGpCI4OOefRynmp4abUwQTaCakQv9PkgjgDwyZ3w2APH47sy4sFsKhX80LbfYKapxpnC4U61PVZnPI"
-
 func CheckSize(message string) bool {
-	return unsafe.Sizeof(message) > 1000*24
+	return unsafe.Sizeof(message) > 1000*12
 }
 
 type CertificateClaims struct {
@@ -42,7 +41,7 @@ func GenerateCertificate(id string, sender int64) (string, error) {
 		},
 	})
 
-	token, err := tk.SignedString([]byte(MessageOwnerKey))
+	token, err := tk.SignedString([]byte(credentials.JWT_KEY))
 
 	if err != nil {
 		return "", err
@@ -54,7 +53,7 @@ func GenerateCertificate(id string, sender int64) (string, error) {
 func GetCertificateClaims(certificate string) (*CertificateClaims, bool) {
 
 	token, err := jwt.ParseWithClaims(certificate, &CertificateClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(MessageOwnerKey), nil
+		return []byte(credentials.JWT_KEY), nil
 	}, jwt.WithLeeway(5*time.Minute))
 
 	if err != nil {

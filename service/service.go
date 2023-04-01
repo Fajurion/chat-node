@@ -5,6 +5,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/fetching"
 	"chat-node/pipe"
+	"log"
 	"time"
 )
 
@@ -72,6 +73,8 @@ func User(client *bridge.Client) bool {
 	if !setup_conv(client, &account, &current) {
 		return false
 	}
+
+	log.Println("Fetch:", current.LastFetch)
 
 	// Get new actions
 	if !setup_act(client, &current, &firstFetch) {

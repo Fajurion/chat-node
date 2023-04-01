@@ -5,6 +5,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/fetching"
 	"chat-node/pipe"
+	"log"
 )
 
 func setup_act(client *bridge.Client, current *fetching.Session, firstFetch *int64) bool {
@@ -14,7 +15,9 @@ func setup_act(client *bridge.Client, current *fetching.Session, firstFetch *int
 
 	// Get new actions
 	var actionList []fetching.Action
-	database.DBConn.Where("created_at > ? AND account = ?", current.LastFetch, current.Account).Take(&actionList)
+	database.DBConn.Model(&fetching.Action{}).Where("created_at > ? AND account = ?", current.LastFetch, current.Account).Take(&actionList)
+
+	log.Println("Actions: ", actionList)
 
 	// Send the actions to the user
 	client.SendEvent(pipe.Event{

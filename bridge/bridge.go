@@ -17,6 +17,7 @@ type Client struct {
 	Conn     *websocket.Conn
 	ID       int64
 	Session  uint64
+	Room     string // Livekit room
 	Username string
 	Tag      string
 	End      time.Time

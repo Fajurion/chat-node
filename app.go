@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chat-node/calls"
 	"chat-node/database"
 	handlerCreate "chat-node/handler/create"
 	"chat-node/pipe"
@@ -38,6 +39,9 @@ func main() {
 	app.Route("/", routes.Setup)
 
 	pipe.Create()
+
+	// Connect to livekit
+	calls.Connect()
 
 	// Create handlers
 	handlerCreate.Create()
