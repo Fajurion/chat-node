@@ -7,4 +7,5 @@ import (
 func SetupActions() {
 	handler.Routes["c_s"] = start
 	handler.Routes["c_j"] = join
+	handler.Routes["c_c"] = status
 }

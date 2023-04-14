@@ -72,6 +72,7 @@ func openConversation(message handler.Message) {
 	members = append(members, message.Client.ID)
 
 	var conversation = conversations.Conversation{
+		Type:      "chat",
 		Creator:   message.Client.ID,
 		Data:      data,
 		CreatedAt: time.Now().UnixMilli(),
