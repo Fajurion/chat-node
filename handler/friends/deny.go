@@ -6,6 +6,7 @@ import (
 	"chat-node/pipe/send"
 	"chat-node/util"
 
+	"github.com/Fajurion/pipes"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -50,7 +51,7 @@ func denyFriendRequest(message handler.Message) {
 	}
 
 	nodeRaw := res["node"].(map[string]interface{})
-	nodeEntity := pipe.Node{
+	nodeEntity := pipes.Node{
 		ID:     int64(nodeRaw["id"].(float64)),
 		Domain: nodeRaw["domain"].(string),
 		Token:  nodeRaw["token"].(string),
