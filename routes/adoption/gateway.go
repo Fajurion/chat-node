@@ -59,11 +59,11 @@ func ws(conn *websocket.Conn) {
 		go connection.ConnectWS(node)
 	}
 
-	log.Printf("Incoming event stream of node %d connected. \n", node.ID)
+	log.Printf("Incoming event stream of node %s connected. \n", node.ID)
 	defer func() {
 
 		// Close connection
-		log.Printf("Incoming event stream of node %d disconnected. \n", node.ID)
+		log.Printf("Incoming event stream of node %s disconnected. \n", node.ID)
 
 		connection.RemoveWS(node.ID)
 		integration.ReportOffline(node)
