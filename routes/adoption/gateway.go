@@ -1,11 +1,13 @@
 package adoption
 
 import (
-	"chat-node/pipe"
-	"chat-node/pipe/receive"
 	"chat-node/util"
 	"log"
 
+	integration "fajurion.com/node-integration"
+	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/connection"
+	"github.com/Fajurion/pipes/receive"
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
@@ -23,7 +25,7 @@ func SetupRoutes(router fiber.Router) {
 			token := c.Get("Sec-WebSocket-Protocol")
 
 			// Parse request
-			var req pipe.AdoptionRequest
+			var req connection.AdoptionRequest
 			if err := sonic.Unmarshal([]byte(token), &req); err != nil {
 				return c.SendStatus(fiber.StatusBadRequest)
 			}
@@ -33,7 +35,7 @@ func SetupRoutes(router fiber.Router) {
 				return c.SendStatus(fiber.StatusUnauthorized)
 			}
 
-			pipe.AddNode(req.Adopting)
+			pipes.AddNode(req.Adopting)
 
 			// Set the token as a local variable
 			c.Locals("ws", true)
@@ -49,12 +51,12 @@ func SetupRoutes(router fiber.Router) {
 }
 
 func ws(conn *websocket.Conn) {
-	node := conn.Locals("node").(pipe.Node)
+	node := conn.Locals("node").(pipes.Node)
 
 	// Check if event connection is already open
-	if !pipe.ConnectionExists(node.ID) {
+	if !connection.ExistsWS(node.ID) {
 		log.Println("Building outgoing event stream to node", node.ID)
-		go pipe.ConnectToNode(node)
+		go connection.ConnectWS(node)
 	}
 
 	log.Printf("Incoming event stream of node %d connected. \n", node.ID)
@@ -63,7 +65,8 @@ func ws(conn *websocket.Conn) {
 		// Close connection
 		log.Printf("Incoming event stream of node %d disconnected. \n", node.ID)
 
-		pipe.Offline(node)
+		connection.RemoveWS(node.ID)
+		integration.ReportOffline(node)
 		conn.Close()
 	}()
 
@@ -76,13 +79,8 @@ func ws(conn *websocket.Conn) {
 
 		if mtype == websocket.TextMessage {
 
-			// Parse message
-			var message pipe.Message
-			if err := sonic.Unmarshal(msg, &message); err != nil {
-				return
-			}
-
-			receive.Handle(message)
+			// Pass message to pipes
+			receive.ReceiveWS(msg)
 		}
 	}
 

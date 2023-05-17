@@ -5,13 +5,13 @@ import (
 	"chat-node/database/conversations"
 	"chat-node/database/fetching"
 	"chat-node/handler"
-	"chat-node/pipe"
-	"chat-node/pipe/send"
 	"chat-node/util"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/send"
 	"github.com/bytedance/sonic"
 )
 
@@ -23,9 +23,9 @@ func openConversation(message handler.Message) {
 		return
 	}
 
-	var members []int64
+	var members []string
 	for _, member := range message.Data["members"].([]interface{}) {
-		members = append(members, int64(member.(float64)))
+		members = append(members, util.User64(int64(member.(float64))))
 	}
 
 	if len(members) > 100 {
@@ -69,7 +69,7 @@ func openConversation(message handler.Message) {
 		return
 	}
 
-	members = append(members, message.Client.ID)
+	members = append(members, util.User64(message.Client.ID))
 
 	var conversation = conversations.Conversation{
 		Type:      "chat",
@@ -87,14 +87,14 @@ func openConversation(message handler.Message) {
 	for _, member := range members {
 
 		var role uint = conversations.RoleMember
-		if member == message.Client.ID {
+		if member == util.User64(message.Client.ID) {
 			role = conversations.RoleOwner
 		}
 
 		var memberObj = conversations.Member{
 			Conversation: conversation.ID,
 			Role:         role,
-			Account:      member,
+			Account:      util.UserTo64(member),
 		}
 		if database.DBConn.Create(&memberObj).Error != nil {
 			handler.ErrorResponse(message, "server.error")
@@ -106,16 +106,16 @@ func openConversation(message handler.Message) {
 		// Add stored action
 		database.DBConn.Create(&fetching.Action{
 			ID:      util.GenerateToken(32),
-			Account: member,
+			Account: util.UserTo64(member),
 			Action:  "conv_key",
-			Target:  fmt.Sprintf("%d:%s", conversation.ID, keys[fmt.Sprintf("%d", member)]),
+			Target:  fmt.Sprintf("%d:%s", conversation.ID, keys[member]),
 		})
 	}
 
 	// Let the user know that they have a new conversation
-	send.Pipe(pipe.Message{
-		Channel: pipe.BroadcastChannel(members),
-		Event: pipe.Event{
+	send.Pipe(send.ProtocolWS, pipes.Message{
+		Channel: pipes.BroadcastChannel(members),
+		Event: pipes.Event{
 			Name: "conv_open:l",
 			Data: map[string]interface{}{
 				"success":      true,

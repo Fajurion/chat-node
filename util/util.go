@@ -2,6 +2,7 @@ package util
 
 import (
 	"crypto/rand"
+	"fmt"
 	"io"
 	"math/big"
 	"net/http"
@@ -99,4 +100,18 @@ func PostBytesRaw(url string, body map[string]interface{}) (string, error) {
 
 func First(a interface{}, _ interface{}) interface{} {
 	return a
+}
+
+func User64(id int64) string {
+	return fmt.Sprintf("%d", id)
+}
+
+func UserTo64(id string) int64 {
+	var i int64
+	fmt.Sscanf(id, "%d", &i)
+	return i
+}
+
+func UserU(id uint) string {
+	return fmt.Sprintf("%d", id)
 }

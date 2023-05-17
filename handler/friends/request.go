@@ -4,10 +4,10 @@ import (
 	"chat-node/database"
 	"chat-node/database/fetching"
 	"chat-node/handler"
-	"chat-node/pipe"
-	"chat-node/pipe/send"
 	"chat-node/util"
 
+	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/send"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -50,11 +50,10 @@ func friendRequest(message handler.Message) {
 
 	action := res["action"].(string)
 	nodeRaw := res["node"].(map[string]interface{})
-	nodeEntity := pipe.Node{
-		ID:     int64(nodeRaw["id"].(float64)),
-		Domain: nodeRaw["domain"].(string),
-		Token:  nodeRaw["token"].(string),
-		App:    uint(nodeRaw["id"].(float64)),
+	nodeEntity := pipes.Node{
+		ID:    util.User64(int64(nodeRaw["id"].(float64))),
+		WS:    nodeRaw["domain"].(string),
+		Token: nodeRaw["token"].(string),
 	}
 	friend := int64(res["friend"].(float64))
 	signature := res["signature"].(string)
@@ -76,10 +75,10 @@ func friendRequest(message handler.Message) {
 			"id":      friend,
 		})
 
-		send.Socketless(nodeEntity, pipe.Message{
-			Channel: pipe.BroadcastChannel([]int64{friend}),
-			Event: pipe.Event{
-				Sender: message.Client.ID,
+		send.Socketless(nodeEntity, pipes.Message{
+			Channel: pipes.BroadcastChannel([]string{util.User64(friend)}),
+			Event: pipes.Event{
+				Sender: util.User64(message.Client.ID),
 				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
 					"status":    "accepted",
@@ -101,10 +100,10 @@ func friendRequest(message handler.Message) {
 			"id":      friend,
 		})
 
-		send.Socketless(nodeEntity, pipe.Message{
-			Channel: pipe.BroadcastChannel([]int64{friend}),
-			Event: pipe.Event{
-				Sender: message.Client.ID,
+		send.Socketless(nodeEntity, pipes.Message{
+			Channel: pipes.BroadcastChannel([]string{util.User64(friend)}),
+			Event: pipes.Event{
+				Sender: util.User64(message.Client.ID),
 				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
 					"status":    "sent",

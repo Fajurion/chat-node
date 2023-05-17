@@ -3,11 +3,11 @@ package bridge
 import (
 	"chat-node/database"
 	"chat-node/database/fetching"
-	"chat-node/pipe"
 	"chat-node/util"
 	"log"
 	"time"
 
+	"github.com/Fajurion/pipes"
 	"github.com/bytedance/sonic"
 	"github.com/cornelk/hashmap"
 	"github.com/gofiber/websocket/v2"
@@ -23,11 +23,11 @@ type Client struct {
 	End      time.Time
 }
 
-func (c *Client) SendEvent(event pipe.Event) {
+func (c *Client) SendEvent(event pipes.Event) {
 
 	log.Println(event.Name)
 
-	event.Sender = c.ID
+	event.Sender = util.User64(c.ID)
 	msg, err := sonic.Marshal(event)
 	if err != nil {
 		return

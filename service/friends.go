@@ -4,8 +4,9 @@ import (
 	"chat-node/bridge"
 	"chat-node/database"
 	"chat-node/database/fetching"
-	"chat-node/pipe"
 	"chat-node/util"
+
+	"github.com/Fajurion/pipes"
 )
 
 type statusEntity struct {
@@ -34,7 +35,7 @@ func setup_fr(client *bridge.Client, account *int64, current *fetching.Session) 
 	}
 
 	// Send the friends to the user
-	client.SendEvent(pipe.Event{
+	client.SendEvent(pipes.Event{
 		Name: "setup_st",
 		Data: map[string]interface{}{
 			"status": status,

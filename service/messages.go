@@ -5,9 +5,10 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/database/fetching"
-	"chat-node/pipe"
 	"log"
 	"time"
+
+	"github.com/Fajurion/pipes"
 )
 
 func setup_mes(client *bridge.Client, current *fetching.Session, account *int64) bool {
@@ -28,7 +29,7 @@ func setup_mes(client *bridge.Client, current *fetching.Session, account *int64)
 	log.Println("Messages:", messageList)
 
 	// Send the messages to the user
-	client.SendEvent(pipe.Event{
+	client.SendEvent(pipes.Event{
 		Name: "setup_msg",
 		Data: map[string]interface{}{
 			"messages": messageList,

@@ -1,17 +1,18 @@
 package adoption
 
 import (
-	"chat-node/pipe"
-	"chat-node/pipe/receive"
 	"chat-node/util"
 
+	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/receive"
+	"github.com/Fajurion/pipes/send"
 	"github.com/gofiber/fiber/v2"
 )
 
 type socketLessEvent struct {
-	Token   string       `json:"token"`
-	This    uint         `json:"this"`
-	Message pipe.Message `json:"message"`
+	Token   string        `json:"token"`
+	This    uint          `json:"this"`
+	Message pipes.Message `json:"message"`
 }
 
 func socketless(c *fiber.Ctx) error {
@@ -27,7 +28,7 @@ func socketless(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	receive.Handle(event.Message)
+	receive.HandleMessage(send.ProtocolWS, event.Message)
 
 	return c.JSON(fiber.Map{
 		"success": true,

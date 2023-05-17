@@ -4,11 +4,12 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/handler"
-	"chat-node/pipe"
-	"chat-node/pipe/send"
 	"chat-node/util"
 	"chat-node/util/requests"
 	"log"
+
+	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/send"
 )
 
 // Action: conv_msg_create
@@ -68,8 +69,8 @@ func createMessage(message handler.Message) {
 		return
 	}
 
-	var event = pipe.Event{
-		Sender: message.Client.ID,
+	var event = pipes.Event{
+		Sender: util.User64(message.Client.ID),
 		Name:   "conv_msg",
 		Data: map[string]interface{}{
 			"message": store,
@@ -78,10 +79,11 @@ func createMessage(message handler.Message) {
 
 	log.Println("sending..")
 
-	send.Pipe(pipe.Message{
-		Channel: pipe.Conversation(members, nodes),
+	send.Pipe(send.ProtocolWS, pipes.Message{
+		Channel: pipes.Conversation(members, nodes),
 		Event:   event,
 	})
+
 	message.Client.SendEvent(event)
 
 	handler.NormalResponse(message, map[string]interface{}{

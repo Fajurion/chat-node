@@ -5,12 +5,13 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/handler"
-	"chat-node/pipe"
-	"chat-node/pipe/send"
+	"chat-node/util"
 	"chat-node/util/requests"
 	"context"
 	"fmt"
 
+	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/send"
 	"github.com/livekit/protocol/livekit"
 )
 
@@ -31,7 +32,7 @@ func join(message handler.Message) {
 	}
 
 	// Check if joiner is the same as the creator
-	if claims.Ow == message.Client.ID {
+	if claims.Ow == util.User64(message.Client.ID) {
 		handler.ErrorResponse(message, "no.join")
 		return
 	}
@@ -96,27 +97,27 @@ func join(message handler.Message) {
 	}
 
 	// Tell others about it
-	send.Pipe(pipe.Message{
-		Event: pipe.Event{
+	send.Pipe(send.ProtocolWS, pipes.Message{
+		Event: pipes.Event{
 			Name: "c_o:l",
 			Data: map[string]interface{}{
 				"conv": id,
 			},
 		},
-		Channel: pipe.Conversation(members, nodes),
+		Channel: pipes.Conversation(members, nodes),
 	})
 
 	print("sending to", claims.Ow)
 
 	// Let the owner join
-	send.Pipe(pipe.Message{
-		Event: pipe.Event{
+	send.Pipe(send.ProtocolWS, pipes.Message{
+		Event: pipes.Event{
 			Name: "c_s:l",
 			Data: map[string]interface{}{
 				"conv": id,
 			},
 		},
-		Channel: pipe.BroadcastChannel([]int64{claims.Ow}),
+		Channel: pipes.BroadcastChannel([]string{claims.Ow}),
 	})
 
 	handler.NormalResponse(message, map[string]interface{}{

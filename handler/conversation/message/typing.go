@@ -2,9 +2,11 @@ package message
 
 import (
 	"chat-node/handler"
-	"chat-node/pipe"
-	"chat-node/pipe/send"
+	"chat-node/util"
 	"chat-node/util/requests"
+
+	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/send"
 )
 
 // Action: conv_t_s / conv_t
@@ -22,15 +24,15 @@ func typingStatus(message handler.Message) {
 		return
 	}
 
-	if !contains(members, message.Client.ID) {
+	if !contains(members, util.User64(message.Client.ID)) {
 		return
 	}
 
-	send.Pipe(pipe.Message{
-		Channel: pipe.Conversation(members, nodes),
-		Event: pipe.Event{
+	send.Pipe(send.ProtocolWS, pipes.Message{
+		Channel: pipes.Conversation(members, nodes),
+		Event: pipes.Event{
 			Name:   message.Action,
-			Sender: message.Client.ID,
+			Sender: util.User64(message.Client.ID),
 			Data: map[string]interface{}{
 				"id": id,
 			},
@@ -38,7 +40,7 @@ func typingStatus(message handler.Message) {
 	})
 }
 
-func contains(s []int64, e int64) bool {
+func contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
 			return true

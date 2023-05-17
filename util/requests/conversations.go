@@ -3,9 +3,10 @@ package requests
 import (
 	"chat-node/database"
 	"chat-node/database/conversations"
+	"chat-node/util"
 )
 
-func LoadConversationDetails(id uint) ([]int64, []int64, error) {
+func LoadConversationDetails(id uint) ([]string, []string, error) {
 
 	// Get conversation
 	var conversation conversations.Conversation
@@ -20,11 +21,11 @@ func LoadConversationDetails(id uint) ([]int64, []int64, error) {
 	}
 
 	// Turn into arrays
-	var accounts []int64
-	var nodes []int64
+	var accounts []string
+	var nodes []string
 	for _, member := range members {
-		accounts = append(accounts, member.Status.ID)
-		nodes = append(nodes, member.Status.Node)
+		accounts = append(accounts, util.User64(member.Status.ID))
+		nodes = append(nodes, util.User64(member.Status.Node))
 	}
 
 	return accounts, nodes, nil

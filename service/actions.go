@@ -4,8 +4,9 @@ import (
 	"chat-node/bridge"
 	"chat-node/database"
 	"chat-node/database/fetching"
-	"chat-node/pipe"
 	"log"
+
+	"github.com/Fajurion/pipes"
 )
 
 func setup_act(client *bridge.Client, current *fetching.Session, firstFetch *int64) bool {
@@ -20,7 +21,7 @@ func setup_act(client *bridge.Client, current *fetching.Session, firstFetch *int
 	log.Println("Actions: ", actionList)
 
 	// Send the actions to the user
-	client.SendEvent(pipe.Event{
+	client.SendEvent(pipes.Event{
 		Name: "setup_act",
 		Data: map[string]interface{}{
 			"actions": actionList,

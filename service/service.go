@@ -4,16 +4,18 @@ import (
 	"chat-node/bridge"
 	"chat-node/database"
 	"chat-node/database/fetching"
-	"chat-node/pipe"
+	"chat-node/util"
 	"log"
 	"time"
+
+	"github.com/Fajurion/pipes"
 )
 
 func User(client *bridge.Client) bool {
 	session := client.Session
 	account := client.ID
 
-	client.SendEvent(pipe.Event{
+	client.SendEvent(pipes.Event{
 		Name: "setup_wel",
 		Data: map[string]interface{}{
 			"name": client.Username,
@@ -29,14 +31,14 @@ func User(client *bridge.Client) bool {
 		if database.DBConn.Create(&fetching.Status{
 			ID:     account,
 			Status: "-",
-			Node:   pipe.CurrentNode.ID,
+			Node:   util.UserTo64(pipes.CurrentNode.ID),
 		}).Error != nil {
 			return false
 		}
 	} else {
 
 		// Update the status
-		database.DBConn.Model(&fetching.Status{}).Where(&fetching.Status{ID: account}).Update("node", pipe.CurrentNode.ID)
+		database.DBConn.Model(&fetching.Status{}).Where(&fetching.Status{ID: account}).Update("node", util.UserTo64(pipes.CurrentNode.ID))
 	}
 
 	// Check if this is a new device
@@ -49,7 +51,7 @@ func User(client *bridge.Client) bool {
 		current = fetching.Session{
 			ID:        session,
 			Account:   account,
-			Node:      pipe.CurrentNode.ID,
+			Node:      util.UserTo64(pipes.CurrentNode.ID),
 			LastFetch: 0,
 		}
 
@@ -57,7 +59,7 @@ func User(client *bridge.Client) bool {
 			return false
 		}
 
-		client.SendEvent(pipe.Event{
+		client.SendEvent(pipes.Event{
 			Name: "setup_device",
 			Data: map[string]interface{}{
 				"device": client.Session,
@@ -93,14 +95,14 @@ func User(client *bridge.Client) bool {
 
 	// Save the session
 	current.LastFetch = time.Now().UnixMilli()
-	current.Node = pipe.CurrentNode.ID
+	current.Node = util.UserTo64(pipes.CurrentNode.ID)
 	if database.DBConn.Save(&current).Error != nil {
 		bridge.Remove(client.ID, client.Session)
 		return false
 	}
 
 	// Send the setup complete event
-	client.SendEvent(pipe.Event{
+	client.SendEvent(pipes.Event{
 		Name: "setup_fin",
 		Data: map[string]interface{}{},
 	})

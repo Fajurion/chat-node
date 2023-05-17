@@ -5,9 +5,11 @@ import (
 	"chat-node/database"
 	"chat-node/database/fetching"
 	"chat-node/handler"
-	"chat-node/pipe"
-	"chat-node/pipe/send"
 	"chat-node/util"
+	"fmt"
+
+	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/send"
 )
 
 // Action: acc_st
@@ -62,21 +64,21 @@ func UpdateStatus(client *bridge.Client, sType uint, status string, set bool) (b
 	}
 
 	// Transform array
-	var friends []int64
+	var friends []string
 	for _, friend := range res["friends"].([]interface{}) {
-		friends = append(friends, int64(friend.(float64)))
+		friends = append(friends, fmt.Sprintf("%d", uint(friend.(float64))))
 	}
 
 	// Send the event to the friends
-	send.Pipe(pipe.Message{
-		Event: pipe.Event{
+	send.Pipe(send.ProtocolWS, pipes.Message{
+		Event: pipes.Event{
 			Name:   "fr_st",
-			Sender: client.ID,
+			Sender: util.User64(client.ID),
 			Data: map[string]interface{}{
 				"st": status,
 			},
 		},
-		Channel: pipe.BroadcastChannel(friends),
+		Channel: pipes.BroadcastChannel(friends),
 	})
 
 	// Send the response
