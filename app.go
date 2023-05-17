@@ -13,13 +13,13 @@ import (
 
 	integration "fajurion.com/node-integration"
 	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/connection"
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 var APP_ID uint = 0
-var nodeID uint = 0
 
 func main() {
 
@@ -38,9 +38,6 @@ func main() {
 	})
 
 	pipes.SetupCurrent(integration.NODE_ID, integration.NODE_TOKEN)
-
-	nID, _ := strconv.Atoi(integration.NODE_ID)
-	nodeID = uint(nID)
 
 	// Query current node
 	_, _, currentApp, domain := integration.GetCurrent()
@@ -73,7 +70,18 @@ func main() {
 		return
 	}
 
-	pipes.SetupWS(domain + "/adoption/gateway")
+	pipes.SetupWS("ws://" + domain + "/adoption")
+
+	// Connect to other nodes
+	pipes.IterateNodes(func(_ string, node pipes.Node) bool {
+
+		log.Println("Connecting to node " + node.WS)
+
+		if err := connection.ConnectWS(node); err != nil {
+			log.Println(err.Error())
+		}
+		return true
+	})
 
 	if integration.Testing {
 
@@ -107,11 +115,11 @@ func parseNodes(res map[string]interface{}) bool {
 			return true
 		}
 
+		// Add node to pipes
 		pipes.AddNode(pipes.Node{
-			ID:    fmt.Sprintf("%f", n["id"].(float64)),
+			ID:    fmt.Sprintf("%d", int64(n["id"].(float64))),
 			Token: n["token"].(string),
-			SL:    fmt.Sprintf("%s:%d", domain, port),
-			UDP:   fmt.Sprintf("%s:%d", domain, port+1),
+			WS:    "ws://" + fmt.Sprintf("%s:%d", domain, port) + "/adoption",
 		})
 	}
 

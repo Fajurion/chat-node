@@ -1,14 +1,12 @@
 package adoption
 
 import (
-	"chat-node/util"
-	"log"
+	"chat-node/util/requests"
 
 	integration "fajurion.com/node-integration"
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/connection"
 	"github.com/Fajurion/pipes/receive"
-	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 )
@@ -24,22 +22,15 @@ func SetupRoutes(router fiber.Router) {
 			// Check if the request has a token
 			token := c.Get("Sec-WebSocket-Protocol")
 
-			// Parse request
-			var req connection.AdoptionRequest
-			if err := sonic.Unmarshal([]byte(token), &req); err != nil {
-				return c.SendStatus(fiber.StatusBadRequest)
+			// Adopt node
+			node, err := receive.ReceiveWSAdoption(token)
+			if err != nil {
+				return requests.InvalidRequest(c)
 			}
-
-			// Check if the token is valid
-			if util.NODE_TOKEN != req.Token {
-				return c.SendStatus(fiber.StatusUnauthorized)
-			}
-
-			pipes.AddNode(req.Adopting)
 
 			// Set the token as a local variable
 			c.Locals("ws", true)
-			c.Locals("node", req.Adopting)
+			c.Locals("node", node)
 			return c.Next()
 		}
 
@@ -53,18 +44,9 @@ func SetupRoutes(router fiber.Router) {
 func ws(conn *websocket.Conn) {
 	node := conn.Locals("node").(pipes.Node)
 
-	// Check if event connection is already open
-	if !connection.ExistsWS(node.ID) {
-		log.Println("Building outgoing event stream to node", node.ID)
-		go connection.ConnectWS(node)
-	}
-
-	log.Printf("Incoming event stream of node %s connected. \n", node.ID)
 	defer func() {
 
-		// Close connection
-		log.Printf("Incoming event stream of node %s disconnected. \n", node.ID)
-
+		// Disconnect node
 		connection.RemoveWS(node.ID)
 		integration.ReportOffline(node)
 		conn.Close()

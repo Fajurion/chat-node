@@ -3,13 +3,14 @@ module chat-node
 go 1.20
 
 require (
+	fajurion.com/node-integration v0.0.0-00010101000000-000000000000
+	github.com/Fajurion/pipes v0.0.0-20230427150034-9014f5e874c4
 	github.com/gofiber/fiber/v2 v2.44.0
-	nhooyr.io/websocket v1.8.7
+	github.com/livekit/protocol v1.4.2
+	github.com/livekit/server-sdk-go v1.0.8
 )
 
 require (
-	fajurion.com/node-integration v0.0.0-00010101000000-000000000000 // indirect
-	github.com/Fajurion/pipes v0.0.0-20230427150034-9014f5e874c4 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -24,8 +25,6 @@ require (
 	github.com/jxskiss/base62 v1.1.0 // indirect
 	github.com/lithammer/shortuuid/v4 v4.0.0 // indirect
 	github.com/livekit/mediatransportutil v0.0.0-20230130133657-96cfb115473a // indirect
-	github.com/livekit/protocol v1.4.2 // indirect
-	github.com/livekit/server-sdk-go v1.0.8 // indirect
 	github.com/mackerelio/go-osstat v0.2.3 // indirect
 	github.com/magefile/mage v1.14.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
@@ -62,6 +61,7 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	nhooyr.io/websocket v1.8.7 // indirect
 )
 
 require (
@@ -73,8 +73,8 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
-	gorm.io/driver/postgres v1.4.8 // indirect
-	gorm.io/gorm v1.24.5 // indirect
+	gorm.io/driver/postgres v1.4.8
+	gorm.io/gorm v1.24.5
 )
 
 require (
