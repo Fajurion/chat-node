@@ -5,7 +5,6 @@ import (
 	"chat-node/database/fetching"
 	"chat-node/handler"
 	"chat-node/util"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,7 +19,7 @@ func removeFriend(message handler.Message) {
 	}
 
 	// Get the account
-	id := int64(message.Data["id"].(float64))
+	id := message.Data["id"].(string)
 
 	// Send request to the server
 	res, err := util.PostRequest("/account/friends/remove", fiber.Map{
@@ -45,14 +44,14 @@ func removeFriend(message handler.Message) {
 		ID:      util.GenerateToken(32),
 		Account: message.Client.ID,
 		Action:  "fr_rem",
-		Target:  fmt.Sprintf("%d", id),
+		Target:  id,
 	})
 
 	database.DBConn.Create(&fetching.Action{
 		ID:      util.GenerateToken(32),
 		Account: id,
 		Action:  "fr_rem",
-		Target:  fmt.Sprintf("%d", message.Client.ID),
+		Target:  message.Client.ID,
 	})
 
 	handler.SuccessResponse(message)

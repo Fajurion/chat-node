@@ -15,8 +15,8 @@ import (
 
 type Client struct {
 	Conn     *websocket.Conn
-	ID       int64
-	Session  uint64
+	ID       string
+	Session  string
 	Room     string // Livekit room
 	Username string
 	Tag      string
@@ -27,7 +27,7 @@ func (c *Client) SendEvent(event pipes.Event) {
 
 	log.Println(event.Name)
 
-	event.Sender = util.User64(c.ID)
+	event.Sender = c.ID
 	msg, err := sonic.Marshal(event)
 	if err != nil {
 		return
@@ -41,12 +41,12 @@ func (c *Client) IsExpired() bool {
 }
 
 // User ID -> Token -> Client
-var Connections = hashmap.New[int64, *hashmap.Map[uint64, Client]]()
+var Connections = hashmap.New[string, *hashmap.Map[string, Client]]()
 
-func AddClient(conn *websocket.Conn, id int64, session uint64, username string, tag string) {
+func AddClient(conn *websocket.Conn, id string, session string, username string, tag string) {
 
 	if _, ok := Connections.Get(id); !ok {
-		Connections.Insert(id, hashmap.New[uint64, Client]())
+		Connections.Insert(id, hashmap.New[string, Client]())
 	}
 
 	clients, _ := Connections.Get(id)
@@ -62,7 +62,7 @@ func AddClient(conn *websocket.Conn, id int64, session uint64, username string, 
 	Connections.Set(id, clients)
 }
 
-func Remove(id int64, session uint64) {
+func Remove(id string, session string) {
 
 	database.DBConn.Model(&fetching.Session{}).Where("id = ?", session).Update("last_fetch", time.Now().UnixMilli())
 	util.PostRequest("/node/disconnect", map[string]interface{}{
@@ -86,21 +86,21 @@ func Remove(id int64, session uint64) {
 	}
 }
 
-func Send(id int64, msg []byte) {
+func Send(id string, msg []byte) {
 	clients, ok := Connections.Get(id)
 
 	if !ok {
 		return
 	}
 
-	clients.Range(func(session uint64, client Client) bool {
+	clients.Range(func(session string, client Client) bool {
 
 		SendMessage(client.Conn, msg)
 		return true
 	})
 }
 
-func SendSession(id int64, session uint64, msg []byte) {
+func SendSession(id string, session string, msg []byte) {
 	clients, _ := Connections.Get(id)
 	client, _ := clients.Get(session)
 
@@ -111,7 +111,7 @@ func SendMessage(conn *websocket.Conn, msg []byte) {
 	conn.WriteMessage(websocket.TextMessage, msg)
 }
 
-func ExistsConnection(id int64, session uint64) bool {
+func ExistsConnection(id string, session string) bool {
 	clients, ok := Connections.Get(id)
 	if !ok {
 		return false
@@ -121,14 +121,14 @@ func ExistsConnection(id int64, session uint64) bool {
 	return ok
 }
 
-func Get(id int64, session uint64) *Client {
+func Get(id string, session string) *Client {
 	clients, _ := Connections.Get(id)
 	client, _ := clients.Get(session)
 
 	return &client
 }
 
-func GetConnections(id int64) int {
+func GetConnections(id string) int {
 	clients, ok := Connections.Get(id)
 	if !ok {
 		return 0

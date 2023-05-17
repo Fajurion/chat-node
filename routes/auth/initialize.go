@@ -13,11 +13,11 @@ import (
 
 type intializeRequest struct {
 	NodeToken  string   `json:"node_token"`
-	Session    uint64   `json:"session"`
-	UserID     int64    `json:"user_id"`
+	Session    string   `json:"session"`
+	UserID     string   `json:"user_id"`
 	Username   string   `json:"username"`
 	Tag        string   `json:"tag"`
-	SessionIds []uint64 `json:"session_ids"`
+	SessionIds []string `json:"session_ids"`
 }
 
 func initializeConnection(c *fiber.Ctx) error {

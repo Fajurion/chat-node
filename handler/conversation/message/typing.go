@@ -2,7 +2,6 @@ package message
 
 import (
 	"chat-node/handler"
-	"chat-node/util"
 	"chat-node/util/requests"
 
 	"github.com/Fajurion/pipes"
@@ -16,7 +15,7 @@ func typingStatus(message handler.Message) {
 		return
 	}
 
-	id := uint(message.Data["id"].(float64))
+	id := message.Data["id"].(string)
 
 	// Send to the conversation
 	members, nodes, err := requests.LoadConversationDetails(id)
@@ -24,7 +23,7 @@ func typingStatus(message handler.Message) {
 		return
 	}
 
-	if !contains(members, util.User64(message.Client.ID)) {
+	if !contains(members, message.Client.ID) {
 		return
 	}
 
@@ -32,7 +31,7 @@ func typingStatus(message handler.Message) {
 		Channel: pipes.Conversation(members, nodes),
 		Event: pipes.Event{
 			Name:   message.Action,
-			Sender: util.User64(message.Client.ID),
+			Sender: message.Client.ID,
 			Data: map[string]interface{}{
 				"id": id,
 			},

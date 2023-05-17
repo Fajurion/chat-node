@@ -4,7 +4,6 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/handler"
-	"chat-node/util"
 	"chat-node/util/requests"
 
 	"github.com/Fajurion/pipes"
@@ -84,7 +83,7 @@ func updateMessage(message handler.Message) {
 	send.Pipe(send.ProtocolWS, pipes.Message{
 		Channel: pipes.Conversation(members, nodes),
 		Event: pipes.Event{
-			Sender: util.User64(message.Client.ID),
+			Sender: message.Client.ID,
 			Name:   "conv_msg",
 			Data: map[string]interface{}{
 				"id":           id,

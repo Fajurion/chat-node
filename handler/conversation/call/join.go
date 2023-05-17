@@ -5,10 +5,8 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/handler"
-	"chat-node/util"
 	"chat-node/util/requests"
 	"context"
-	"fmt"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
@@ -22,7 +20,7 @@ func join(message handler.Message) {
 		return
 	}
 
-	id := int64(message.Data["id"].(float64)) // ID of the conversation
+	id := message.Data["id"].(string) // ID of the conversation
 	token := message.Data["token"].(string)
 	claims, valid := calls.GetCallClaims(token)
 
@@ -32,13 +30,13 @@ func join(message handler.Message) {
 	}
 
 	// Check if joiner is the same as the creator
-	if claims.Ow == util.User64(message.Client.ID) {
+	if claims.Ow == message.Client.ID {
 		handler.ErrorResponse(message, "no.join")
 		return
 	}
 
 	// Check if room name is valid
-	if !claims.Valid(fmt.Sprintf("c_%d", id)) {
+	if !claims.Valid(id) {
 		handler.ErrorResponse(message, "invalid")
 		return
 	}
@@ -57,7 +55,7 @@ func join(message handler.Message) {
 	if len(res.Rooms) > 0 {
 
 		// Connect to call
-		tk, err := calls.GetJoinToken(claims.CID, fmt.Sprintf("%d", message.Client.ID))
+		tk, err := calls.GetJoinToken(claims.CID, message.Client.ID)
 
 		if err != nil {
 			handler.ErrorResponse(message, "server.error")
@@ -82,7 +80,7 @@ func join(message handler.Message) {
 	}
 
 	// Connect to call
-	tk, err := calls.GetJoinToken(claims.CID, fmt.Sprintf("%d", message.Client.ID))
+	tk, err := calls.GetJoinToken(claims.CID, message.Client.ID)
 
 	if err != nil {
 		handler.ErrorResponse(message, "server.error")
@@ -90,7 +88,7 @@ func join(message handler.Message) {
 	}
 
 	// Send to the conversation
-	members, nodes, err := requests.LoadConversationDetails(uint(id))
+	members, nodes, err := requests.LoadConversationDetails(id)
 	if err != nil {
 		handler.ErrorResponse(message, "server.error")
 		return

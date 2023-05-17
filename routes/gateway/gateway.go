@@ -30,7 +30,7 @@ func SetupRoutes(router fiber.Router) {
 
 			// Check if the token is valid
 			tk := bridge.CheckToken(token)
-			if tk.UserID == 0 {
+			if tk.UserID == "" {
 				return c.SendStatus(fiber.StatusBadRequest)
 			}
 

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"chat-node/util"
-	"fmt"
 	"runtime/debug"
 
 	"github.com/Fajurion/pipes"
@@ -13,8 +12,8 @@ func NormalResponse(message Message, data map[string]interface{}) {
 	Response(message.Client.ID, message.Action, data)
 }
 
-func Response(client int64, action string, data map[string]interface{}) {
-	send.Client(fmt.Sprintf("%d", client), pipes.Event{
+func Response(client string, action string, data map[string]interface{}) {
+	send.Client(client, pipes.Event{
 		Sender: "0",
 		Name:   action,
 		Data:   data,

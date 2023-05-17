@@ -9,7 +9,7 @@ import (
 	"github.com/Fajurion/pipes"
 )
 
-func setup_conv(client *bridge.Client, account *int64, current *fetching.Session) bool {
+func setup_conv(client *bridge.Client, account *string, current *fetching.Session) bool {
 
 	var conversationList []conversations.Conversation
 	database.DBConn.Raw("SELECT * FROM conversations AS c1 WHERE created_at > ? AND EXISTS ( SELECT conversation FROM members AS mem1 WHERE account = ? AND mem1.conversation = c1.id )", current.LastFetch, *account).Scan(&conversationList)

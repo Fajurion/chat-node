@@ -39,7 +39,7 @@ func start(message handler.Message) {
 		println("connecting to call")
 
 		// Connect to call
-		tk, err := calls.GetJoinToken(roomName, fmt.Sprintf("%d", message.Client.ID))
+		tk, err := calls.GetJoinToken(roomName, message.Client.ID)
 
 		if err != nil {
 			handler.ErrorResponse(message, "server.error")

@@ -6,6 +6,7 @@ import (
 	handlerCreate "chat-node/handler/create"
 	"chat-node/processors"
 	"chat-node/routes"
+	"chat-node/util"
 	"fmt"
 	"log"
 	"strconv"
@@ -40,7 +41,8 @@ func main() {
 	pipes.SetupCurrent(integration.NODE_ID, integration.NODE_TOKEN)
 
 	// Query current node
-	_, _, currentApp, domain := integration.GetCurrent()
+	_, tk, currentApp, domain := integration.GetCurrent()
+	util.NODE_TOKEN = tk
 	APP_ID = currentApp
 
 	// Report online status

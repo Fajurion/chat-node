@@ -2,7 +2,6 @@ package calls
 
 import (
 	"chat-node/database/credentials"
-	"chat-node/util"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -22,11 +21,11 @@ type CallClaims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateCallToken(id string, owner int64) (string, error) {
+func GenerateCallToken(id string, owner string) (string, error) {
 
 	tk := jwt.NewWithClaims(jwt.SigningMethodHS256, CallClaims{
 		CID: id,
-		Ow:  util.User64(owner),
+		Ow:  owner,
 		EXP: time.Now().Add(5 * time.Minute).Unix(),
 	})
 

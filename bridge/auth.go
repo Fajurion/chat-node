@@ -1,8 +1,8 @@
 package bridge
 
 type ConnectionToken struct {
-	UserID   int64
-	Session  uint64
+	UserID   string
+	Session  string
 	Username string
 	Tag      string
 }
@@ -17,7 +17,7 @@ func RemoveToken(token string) {
 	delete(ConnectionTokens, token)
 }
 
-func AddToken(token string, id int64, session uint64, username string, tag string) {
+func AddToken(token string, id string, session string, username string, tag string) {
 	ConnectionTokens[token] = ConnectionToken{
 		UserID:   id,
 		Session:  session,

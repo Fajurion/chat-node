@@ -25,7 +25,7 @@ func openConversation(message handler.Message) {
 
 	var members []string
 	for _, member := range message.Data["members"].([]interface{}) {
-		members = append(members, util.User64(int64(member.(float64))))
+		members = append(members, member.(string))
 	}
 
 	if len(members) > 100 {
@@ -69,7 +69,7 @@ func openConversation(message handler.Message) {
 		return
 	}
 
-	members = append(members, util.User64(message.Client.ID))
+	members = append(members, message.Client.ID)
 
 	var conversation = conversations.Conversation{
 		Type:      "chat",
@@ -87,14 +87,14 @@ func openConversation(message handler.Message) {
 	for _, member := range members {
 
 		var role uint = conversations.RoleMember
-		if member == util.User64(message.Client.ID) {
+		if member == message.Client.ID {
 			role = conversations.RoleOwner
 		}
 
 		var memberObj = conversations.Member{
 			Conversation: conversation.ID,
 			Role:         role,
-			Account:      util.UserTo64(member),
+			Account:      member,
 		}
 		if database.DBConn.Create(&memberObj).Error != nil {
 			handler.ErrorResponse(message, "server.error")
@@ -106,9 +106,9 @@ func openConversation(message handler.Message) {
 		// Add stored action
 		database.DBConn.Create(&fetching.Action{
 			ID:      util.GenerateToken(32),
-			Account: util.UserTo64(member),
+			Account: member,
 			Action:  "conv_key",
-			Target:  fmt.Sprintf("%d:%s", conversation.ID, keys[member]),
+			Target:  fmt.Sprintf("%s:%s", conversation.ID, keys[member]),
 		})
 	}
 

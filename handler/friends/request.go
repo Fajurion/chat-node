@@ -51,11 +51,11 @@ func friendRequest(message handler.Message) {
 	action := res["action"].(string)
 	nodeRaw := res["node"].(map[string]interface{})
 	nodeEntity := pipes.Node{
-		ID:    util.User64(int64(nodeRaw["id"].(float64))),
+		ID:    util.Node64(int64(nodeRaw["id"].(float64))),
 		WS:    nodeRaw["domain"].(string),
 		Token: nodeRaw["token"].(string),
 	}
-	friend := int64(res["friend"].(float64))
+	friend := res["friend"].(string)
 	signature := res["signature"].(string)
 	key := res["key"].(string)
 
@@ -64,7 +64,7 @@ func friendRequest(message handler.Message) {
 
 		// Delete stored actions for friend removal
 		database.DBConn.
-			Where("action = ? AND account IN ? AND target IN ?", "fr_rem", []int64{message.Client.ID, friend}, []int64{message.Client.ID, friend}).
+			Where("action = ? AND account IN ? AND target IN ?", "fr_rem", []string{message.Client.ID, friend}, []string{message.Client.ID, friend}).
 			Delete(&fetching.Action{})
 
 		handler.NormalResponse(message, map[string]interface{}{
@@ -76,9 +76,9 @@ func friendRequest(message handler.Message) {
 		})
 
 		send.Socketless(nodeEntity, pipes.Message{
-			Channel: pipes.BroadcastChannel([]string{util.User64(friend)}),
+			Channel: pipes.BroadcastChannel([]string{friend}),
 			Event: pipes.Event{
-				Sender: util.User64(message.Client.ID),
+				Sender: message.Client.ID,
 				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
 					"status":    "accepted",
@@ -101,9 +101,9 @@ func friendRequest(message handler.Message) {
 		})
 
 		send.Socketless(nodeEntity, pipes.Message{
-			Channel: pipes.BroadcastChannel([]string{util.User64(friend)}),
+			Channel: pipes.BroadcastChannel([]string{friend}),
 			Event: pipes.Event{
-				Sender: util.User64(message.Client.ID),
+				Sender: message.Client.ID,
 				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
 					"status":    "sent",

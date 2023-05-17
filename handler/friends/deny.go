@@ -51,16 +51,16 @@ func denyFriendRequest(message handler.Message) {
 
 	nodeRaw := res["node"].(map[string]interface{})
 	nodeEntity := pipes.Node{
-		ID:    util.User64(int64(nodeRaw["id"].(float64))),
+		ID:    util.Node64(int64(nodeRaw["id"].(float64))),
 		WS:    nodeRaw["domain"].(string),
 		Token: nodeRaw["token"].(string),
 	}
-	friend := int64(res["friend"].(float64))
+	friend := res["friend"].(string)
 
 	send.Socketless(nodeEntity, pipes.Message{
-		Channel: pipes.BroadcastChannel([]string{util.User64(friend)}),
+		Channel: pipes.BroadcastChannel([]string{friend}),
 		Event: pipes.Event{
-			Sender: util.User64(message.Client.ID),
+			Sender: message.Client.ID,
 			Name:   "fr_rq:l",
 			Data: map[string]interface{}{
 				"status":   "denied",

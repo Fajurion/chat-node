@@ -70,7 +70,7 @@ func createMessage(message handler.Message) {
 	}
 
 	var event = pipes.Event{
-		Sender: util.User64(message.Client.ID),
+		Sender: message.Client.ID,
 		Name:   "conv_msg",
 		Data: map[string]interface{}{
 			"message": store,

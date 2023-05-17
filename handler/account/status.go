@@ -73,7 +73,7 @@ func UpdateStatus(client *bridge.Client, sType uint, status string, set bool) (b
 	send.Pipe(send.ProtocolWS, pipes.Message{
 		Event: pipes.Event{
 			Name:   "fr_st",
-			Sender: util.User64(client.ID),
+			Sender: client.ID,
 			Data: map[string]interface{}{
 				"st": status,
 			},

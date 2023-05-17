@@ -11,7 +11,7 @@ import (
 	"github.com/Fajurion/pipes"
 )
 
-func setup_mes(client *bridge.Client, current *fetching.Session, account *int64) bool {
+func setup_mes(client *bridge.Client, current *fetching.Session, account *string) bool {
 
 	// Delete old messages (for now 1 week old messages)
 	database.DBConn.

@@ -31,14 +31,14 @@ func User(client *bridge.Client) bool {
 		if database.DBConn.Create(&fetching.Status{
 			ID:     account,
 			Status: "-",
-			Node:   util.UserTo64(pipes.CurrentNode.ID),
+			Node:   util.NodeTo64(pipes.CurrentNode.ID),
 		}).Error != nil {
 			return false
 		}
 	} else {
 
 		// Update the status
-		database.DBConn.Model(&fetching.Status{}).Where(&fetching.Status{ID: account}).Update("node", util.UserTo64(pipes.CurrentNode.ID))
+		database.DBConn.Model(&fetching.Status{}).Where(&fetching.Status{ID: account}).Update("node", util.NodeTo64(pipes.CurrentNode.ID))
 	}
 
 	// Check if this is a new device
@@ -51,7 +51,7 @@ func User(client *bridge.Client) bool {
 		current = fetching.Session{
 			ID:        session,
 			Account:   account,
-			Node:      util.UserTo64(pipes.CurrentNode.ID),
+			Node:      util.NodeTo64(pipes.CurrentNode.ID),
 			LastFetch: 0,
 		}
 
@@ -95,7 +95,7 @@ func User(client *bridge.Client) bool {
 
 	// Save the session
 	current.LastFetch = time.Now().UnixMilli()
-	current.Node = util.UserTo64(pipes.CurrentNode.ID)
+	current.Node = util.NodeTo64(pipes.CurrentNode.ID)
 	if database.DBConn.Save(&current).Error != nil {
 		bridge.Remove(client.ID, client.Session)
 		return false

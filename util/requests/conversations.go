@@ -6,7 +6,7 @@ import (
 	"chat-node/util"
 )
 
-func LoadConversationDetails(id uint) ([]string, []string, error) {
+func LoadConversationDetails(id string) ([]string, []string, error) {
 
 	// Get conversation
 	var conversation conversations.Conversation
@@ -24,8 +24,8 @@ func LoadConversationDetails(id uint) ([]string, []string, error) {
 	var accounts []string
 	var nodes []string
 	for _, member := range members {
-		accounts = append(accounts, util.User64(member.Status.ID))
-		nodes = append(nodes, util.User64(member.Status.Node))
+		accounts = append(accounts, member.Status.ID)
+		nodes = append(nodes, util.Node64(member.Status.Node))
 	}
 
 	return accounts, nodes, nil

@@ -6,6 +6,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/bytedance/sonic"
@@ -102,16 +103,15 @@ func First(a interface{}, _ interface{}) interface{} {
 	return a
 }
 
-func User64(id int64) string {
+func Node64(id int64) string {
 	return fmt.Sprintf("%d", id)
 }
 
-func UserTo64(id string) int64 {
-	var i int64
-	fmt.Sscanf(id, "%d", &i)
+func NodeTo64(id string) int64 {
+	i, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return 0
+	}
+
 	return i
-}
-
-func UserU(id uint) string {
-	return fmt.Sprintf("%d", id)
 }

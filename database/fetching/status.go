@@ -1,7 +1,7 @@
 package fetching
 
 type Status struct {
-	ID int64 `gorm:"primaryKey"` // Account ID
+	ID string `gorm:"primaryKey"` // Account ID
 
 	Type    uint   `gorm:"not null"` // 0 = Online, 1 = Offline, 2 = Away, 3 = Do Not Disturb
 	Status  string `gorm:"not null"`
