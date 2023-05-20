@@ -23,7 +23,7 @@ func Response(client string, action string, data map[string]interface{}) {
 func SuccessResponse(message Message) {
 	Response(message.Client.ID, message.Action, map[string]interface{}{
 		"success": true,
-		"message": message,
+		"message": "",
 	})
 }
 

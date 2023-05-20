@@ -69,6 +69,10 @@ func UpdateStatus(client *bridge.Client, sType uint, status string, set bool) (b
 		friends = append(friends, fmt.Sprintf("%d", uint(friend.(float64))))
 	}
 
+	if len(friends) == 0 {
+		return true, ""
+	}
+
 	// Send the event to the friends
 	send.Pipe(send.ProtocolWS, pipes.Message{
 		Event: pipes.Event{
