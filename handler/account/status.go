@@ -6,7 +6,6 @@ import (
 	"chat-node/database/fetching"
 	"chat-node/handler"
 	"chat-node/util"
-	"fmt"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
@@ -63,10 +62,14 @@ func UpdateStatus(client *bridge.Client, sType uint, status string, set bool) (b
 		database.DBConn.Model(&fetching.Status{}).Select("status").Where("id = ?", client.ID).Scan(&status)
 	}
 
+	if res["friends"] == nil {
+		return true, ""
+	}
+
 	// Transform array
 	var friends []string
 	for _, friend := range res["friends"].([]interface{}) {
-		friends = append(friends, fmt.Sprintf("%d", uint(friend.(float64))))
+		friends = append(friends, friend.(string))
 	}
 
 	if len(friends) == 0 {

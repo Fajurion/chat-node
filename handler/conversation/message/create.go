@@ -20,7 +20,7 @@ func createMessage(message handler.Message) {
 		return
 	}
 
-	conversationId := uint(message.Data["conversation"].(float64))
+	conversationId := message.Data["conversation"].(string)
 	data := message.Data["data"].(string)
 	id := util.GenerateToken(32)
 
@@ -70,7 +70,7 @@ func createMessage(message handler.Message) {
 	}
 
 	var event = pipes.Event{
-		Sender: message.Client.ID,
+		Sender: "0", // System, to prevent sending to the client twice
 		Name:   "conv_msg",
 		Data: map[string]interface{}{
 			"message": store,
@@ -83,8 +83,6 @@ func createMessage(message handler.Message) {
 		Channel: pipes.Conversation(members, nodes),
 		Event:   event,
 	})
-
-	message.Client.SendEvent(event)
 
 	handler.NormalResponse(message, map[string]interface{}{
 		"success": true,

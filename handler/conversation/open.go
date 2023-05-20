@@ -72,6 +72,7 @@ func openConversation(message handler.Message) {
 	members = append(members, message.Client.ID)
 
 	var conversation = conversations.Conversation{
+		ID:        util.GenerateToken(12),
 		Type:      "chat",
 		Creator:   message.Client.ID,
 		Data:      data,
@@ -92,6 +93,7 @@ func openConversation(message handler.Message) {
 		}
 
 		var memberObj = conversations.Member{
+			ID:           util.GenerateToken(12),
 			Conversation: conversation.ID,
 			Role:         role,
 			Account:      member,
@@ -113,10 +115,11 @@ func openConversation(message handler.Message) {
 	}
 
 	// Let the user know that they have a new conversation
-	send.Pipe(send.ProtocolWS, pipes.Message{
+	err = send.Pipe(send.ProtocolWS, pipes.Message{
 		Channel: pipes.BroadcastChannel(members),
 		Event: pipes.Event{
-			Name: "conv_open:l",
+			Name:   "conv_open:l",
+			Sender: message.Client.ID,
 			Data: map[string]interface{}{
 				"success":      true,
 				"conversation": conversation,
@@ -125,6 +128,12 @@ func openConversation(message handler.Message) {
 			},
 		},
 	})
+
+	if err != nil {
+		log.Println(err)
+		handler.ErrorResponse(message, "server.error")
+		return
+	}
 
 	handler.SuccessResponse(message)
 }

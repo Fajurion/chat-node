@@ -49,7 +49,7 @@ func main() {
 	res := integration.SetOnline()
 	parseNodes(res)
 
-	pipes.SetupSocketless(domain + "/socketless")
+	pipes.SetupSocketless(domain + "/adoption/socketless")
 
 	app.Use(logger.New())
 
@@ -86,6 +86,7 @@ func main() {
 	})
 
 	if integration.Testing {
+		pipes.DebugLogs = true
 
 		// Start on localhost
 		app.Listen(fmt.Sprintf("localhost:%d", port))

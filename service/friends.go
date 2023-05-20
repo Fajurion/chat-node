@@ -10,7 +10,7 @@ import (
 )
 
 type statusEntity struct {
-	ID     int64  `json:"account"`
+	ID     string `json:"account"`
 	Status string `json:"status"`
 }
 

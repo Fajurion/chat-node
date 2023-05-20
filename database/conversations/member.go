@@ -3,7 +3,7 @@ package conversations
 import "chat-node/database/fetching"
 
 type Member struct {
-	ID uint `json:"id" gorm:"primaryKey"`
+	ID string `json:"id" gorm:"primaryKey"`
 
 	Conversation string `json:"conversation" gorm:"not null"`
 
