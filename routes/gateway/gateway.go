@@ -8,6 +8,8 @@ import (
 	"chat-node/service"
 	"log"
 
+	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/adapter"
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
@@ -74,6 +76,14 @@ func ws(conn *websocket.Conn) {
 		log.Println("Something's wrong with the user")
 		return
 	}
+
+	// Add adapter for pipes
+	adapter.AdaptWS(adapter.Adapter{
+		ID: tk.UserID,
+		Receive: func(event pipes.Event, msg []byte) error {
+			return conn.WriteMessage(websocket.TextMessage, msg)
+		},
+	})
 
 	for {
 		// Read message as text
