@@ -12,6 +12,7 @@ import (
 type statusEntity struct {
 	ID     string `json:"account"`
 	Status string `json:"status"`
+	Type   uint   `json:"type"`
 }
 
 // Setup the friends of the user (online)
@@ -30,7 +31,7 @@ func setup_fr(client *bridge.Client, account *string, current *fetching.Session)
 
 	// Get status of friends
 	var status []statusEntity
-	if database.DBConn.Model(&fetching.Status{}).Select("id,status").Where("id IN ?", res["friends"]).Scan(&status).Error != nil {
+	if database.DBConn.Model(&fetching.Status{}).Select("id,status,type").Where("id IN ?", res["friends"]).Scan(&status).Error != nil {
 		return false
 	}
 
