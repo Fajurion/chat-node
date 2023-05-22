@@ -30,6 +30,7 @@ func User(client *bridge.Client) bool {
 		// Create a new status
 		if database.DBConn.Create(&fetching.Status{
 			ID:     account,
+			Type:   fetching.StatusOnline,
 			Status: "-",
 			Node:   util.NodeTo64(pipes.CurrentNode.ID),
 		}).Error != nil {
