@@ -66,7 +66,7 @@ func ws(conn *websocket.Conn) {
 	defer func() {
 
 		// Update status
-		account.UpdateStatus(bridge.Get(tk.UserID, tk.Session), fetching.StatusOffline, "status.offline", true)
+		account.UpdateStatus(bridge.Get(tk.UserID, tk.Session), fetching.StatusOffline, "", false)
 
 		// Remove the connection from the bridge
 		bridge.Remove(tk.UserID, tk.Session)

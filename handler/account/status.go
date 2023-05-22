@@ -14,12 +14,18 @@ import (
 // Action: acc_st
 func changeStatus(message handler.Message) {
 
-	if message.ValidateForm("status") {
+	if message.ValidateForm("type", "status") {
 		handler.ErrorResponse(message, "invalid")
 		return
 	}
 
-	valid, err := UpdateStatus(message.Client, fetching.StatusOnline, message.Data["status"].(string), true)
+	sType := uint(message.Data["type"].(float64))
+	if sType < fetching.StatusOnline || sType > fetching.StatusDoNotDisturb {
+		handler.ErrorResponse(message, "invalid")
+		return
+	}
+
+	valid, err := UpdateStatus(message.Client, sType, message.Data["status"].(string), true)
 
 	if !valid {
 		handler.ErrorResponse(message, err)
@@ -82,6 +88,7 @@ func UpdateStatus(client *bridge.Client, sType uint, status string, set bool) (b
 			Name:   "fr_st",
 			Sender: client.ID,
 			Data: map[string]interface{}{
+				"t":  sType,
 				"st": status,
 			},
 		},
