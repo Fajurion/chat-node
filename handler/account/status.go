@@ -38,7 +38,9 @@ func changeStatus(message handler.Message) {
 // Action: acc_on
 func setOnline(message handler.Message) {
 
-	valid, err := UpdateStatus(message.Client, fetching.StatusOnline, "", false)
+	var sType uint = fetching.StatusOnline
+	database.DBConn.Model(&fetching.Status{}).Select("type").Where("id = ?", message.Client.ID).Scan(&sType)
+	valid, err := UpdateStatus(message.Client, sType, "", false)
 
 	if !valid {
 		handler.ErrorResponse(message, err)
@@ -63,7 +65,10 @@ func UpdateStatus(client *bridge.Client, sType uint, status string, set bool) (b
 
 	// Update the status of the user
 	if set {
-		database.DBConn.Model(&fetching.Status{}).Where("id = ?", client.ID).Update("status", status)
+		database.DBConn.Model(&fetching.Status{}).Where("id = ?", client.ID).Updates(map[string]interface{}{
+			"type":   sType,
+			"status": status,
+		})
 	} else {
 		database.DBConn.Model(&fetching.Status{}).Select("status").Where("id = ?", client.ID).Scan(&status)
 	}
@@ -92,6 +97,7 @@ func UpdateStatus(client *bridge.Client, sType uint, status string, set bool) (b
 				"st": status,
 			},
 		},
+		NoSelf:  true,
 		Channel: pipes.BroadcastChannel(friends),
 	})
 

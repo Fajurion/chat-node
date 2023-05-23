@@ -35,11 +35,21 @@ func setup_fr(client *bridge.Client, account *string, current *fetching.Session)
 		return false
 	}
 
+	// Get status of the user
+	var userStatus fetching.Status
+	if database.DBConn.Model(&fetching.Status{}).Where("id = ?", account).Take(&userStatus).Error != nil {
+		return false
+	}
+
 	// Send the friends to the user
 	client.SendEvent(pipes.Event{
 		Name: "setup_st",
 		Data: map[string]interface{}{
 			"status": status,
+			"own_status": map[string]interface{}{
+				"status": userStatus.Status,
+				"type":   userStatus.Type,
+			},
 		},
 	})
 
