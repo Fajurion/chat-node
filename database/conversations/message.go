@@ -1,7 +1,7 @@
 package conversations
 
 import (
-	"chat-node/database/credentials"
+	"os"
 	"time"
 	"unsafe"
 
@@ -41,7 +41,7 @@ func GenerateCertificate(id string, sender string) (string, error) {
 		},
 	})
 
-	token, err := tk.SignedString([]byte(credentials.JWT_KEY))
+	token, err := tk.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
 	if err != nil {
 		return "", err
@@ -53,7 +53,7 @@ func GenerateCertificate(id string, sender string) (string, error) {
 func GetCertificateClaims(certificate string) (*CertificateClaims, bool) {
 
 	token, err := jwt.ParseWithClaims(certificate, &CertificateClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(credentials.JWT_KEY), nil
+		return []byte(os.Getenv("JWT_SECRET")), nil
 	}, jwt.WithLeeway(5*time.Minute))
 
 	if err != nil {

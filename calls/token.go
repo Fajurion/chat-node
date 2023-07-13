@@ -1,7 +1,7 @@
 package calls
 
 import (
-	"chat-node/database/credentials"
+	"os"
 	"time"
 
 	"github.com/livekit/protocol/auth"
@@ -10,7 +10,7 @@ import (
 func GetJoinToken(room, identity string) (string, error) {
 
 	// Generate token
-	at := auth.NewAccessToken(credentials.LIVEKIT_KEY, credentials.LIVEKIT_SECRET)
+	at := auth.NewAccessToken(os.Getenv("LK_KEY"), os.Getenv("LK_SECRET"))
 
 	// Add permissions
 	grant := &auth.VideoGrant{

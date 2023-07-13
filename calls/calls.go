@@ -1,7 +1,7 @@
 package calls
 
 import (
-	"chat-node/database/credentials"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -11,7 +11,7 @@ import (
 var RoomClient *lksdk.RoomServiceClient
 
 func Connect() {
-	RoomClient = lksdk.NewRoomServiceClient(credentials.LIVEKIT_URL, credentials.LIVEKIT_KEY, credentials.LIVEKIT_SECRET)
+	RoomClient = lksdk.NewRoomServiceClient(os.Getenv("LK_URL"), os.Getenv("LK_KEY"), os.Getenv("LK_SECRET"))
 }
 
 type CallClaims struct {
@@ -29,7 +29,7 @@ func GenerateCallToken(id string, owner string) (string, error) {
 		EXP: time.Now().Add(5 * time.Minute).Unix(),
 	})
 
-	token, err := tk.SignedString([]byte(credentials.JWT_KEY))
+	token, err := tk.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
 	if err != nil {
 		return "", err
@@ -41,7 +41,7 @@ func GenerateCallToken(id string, owner string) (string, error) {
 func GetCallClaims(certificate string) (*CallClaims, bool) {
 
 	token, err := jwt.ParseWithClaims(certificate, &CallClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(credentials.JWT_KEY), nil
+		return []byte(os.Getenv("JWT_SECRET")), nil
 	}, jwt.WithLeeway(5*time.Minute))
 
 	if err != nil {

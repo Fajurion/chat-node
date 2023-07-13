@@ -2,9 +2,9 @@ package database
 
 import (
 	"chat-node/database/conversations"
-	"chat-node/database/credentials"
 	"chat-node/database/fetching"
 	"log"
+	"os"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -15,7 +15,7 @@ import (
 var DBConn *gorm.DB
 
 func Connect() {
-	url := "host=" + credentials.DB_HOST + " user=" + credentials.DB_USERNAME + " password=" + credentials.DB_PASSWORD + " dbname=" + credentials.DB_DATABASE + " port=" + credentials.DB_PORT
+	url := "host=" + os.Getenv("DB_HOST") + " user=" + os.Getenv("DB_USER") + " password=" + os.Getenv("DB_PASSWORD") + " dbname=" + os.Getenv("DB_DATABASE") + " port=" + os.Getenv("DB_PORT")
 
 	db, err := gorm.Open(postgres.Open(url), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Error),
