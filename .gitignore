@@ -4,6 +4,9 @@ env/
 node-integration/
 node-integration/*
 
+pipes-fiber/
+pipes-fiber/*
+
 pipes/
 pipes/*
 .env
