@@ -22,6 +22,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/jxskiss/base62 v1.1.0 // indirect
 	github.com/lithammer/shortuuid/v4 v4.0.0 // indirect
 	github.com/livekit/mediatransportutil v0.0.0-20230130133657-96cfb115473a // indirect
@@ -112,3 +113,5 @@ require (
 replace fajurion.com/node-integration => ./node-integration
 
 replace github.com/Fajurion/pipes => ./pipes
+
+replace github.com/Fajurion/pipes-fiber => ./pipes-fiber
