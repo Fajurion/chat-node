@@ -18,7 +18,6 @@ func SetupRoutes(router fiber.Router) {
 
 	// Inject a middleware to check if the request is a websocket upgrade request
 	router.Use("/", func(c *fiber.Ctx) error {
-		log.Println("conn")
 
 		if websocket.IsWebSocketUpgrade(c) {
 
