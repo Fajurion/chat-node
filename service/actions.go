@@ -1,15 +1,15 @@
 package service
 
 import (
-	"chat-node/bridge"
 	"chat-node/database"
 	"chat-node/database/fetching"
 	"log"
 
 	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipesfiber"
 )
 
-func setup_act(client *bridge.Client, current *fetching.Session, firstFetch *int64) bool {
+func setup_act(client *pipesfiber.Client, current *fetching.Session, firstFetch *int64) bool {
 
 	// Delete outdated stored actions
 	database.DBConn.Where("created_at < ? AND account = ?", *firstFetch, client.ID).Delete(&fetching.Action{})

@@ -1,12 +1,10 @@
 package friends
 
-import (
-	"chat-node/handler"
-)
+import "github.com/Fajurion/pipesfiber/wshandler"
 
 func SetupActions() {
-	handler.Routes["fr_rq"] = friendRequest
-	handler.Routes["fr_rq_deny"] = denyFriendRequest
+	wshandler.Routes["fr_rq"] = friendRequest
+	wshandler.Routes["fr_rq_deny"] = denyFriendRequest
 
-	handler.Routes["fr_rem"] = removeFriend
+	wshandler.Routes["fr_rem"] = removeFriend
 }

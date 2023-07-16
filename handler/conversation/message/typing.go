@@ -1,15 +1,15 @@
 package message
 
 import (
-	"chat-node/handler"
 	"chat-node/util/requests"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
+	"github.com/Fajurion/pipesfiber/wshandler"
 )
 
 // Action: conv_t_s / conv_t
-func typingStatus(message handler.Message) {
+func typingStatus(message wshandler.Message) {
 
 	if message.ValidateForm("id") {
 		return

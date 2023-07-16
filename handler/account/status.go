@@ -1,56 +1,56 @@
 package account
 
 import (
-	"chat-node/bridge"
 	"chat-node/database"
 	"chat-node/database/fetching"
-	"chat-node/handler"
 	"chat-node/util"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
+	"github.com/Fajurion/pipesfiber"
+	"github.com/Fajurion/pipesfiber/wshandler"
 )
 
 // Action: acc_st
-func changeStatus(message handler.Message) {
+func changeStatus(message wshandler.Message) {
 
 	if message.ValidateForm("type", "status") {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
 	sType := uint(message.Data["type"].(float64))
 	if sType < fetching.StatusOnline || sType > fetching.StatusDoNotDisturb {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
 	valid, err := UpdateStatus(message.Client, sType, message.Data["status"].(string), true)
 
 	if !valid {
-		handler.ErrorResponse(message, err)
+		wshandler.ErrorResponse(message, err)
 		return
 	}
 
-	handler.SuccessResponse(message)
+	wshandler.SuccessResponse(message)
 }
 
 // Action: acc_on
-func setOnline(message handler.Message) {
+func setOnline(message wshandler.Message) {
 
 	var sType uint = fetching.StatusOnline
 	database.DBConn.Model(&fetching.Status{}).Select("type").Where("id = ?", message.Client.ID).Scan(&sType)
 	valid, err := UpdateStatus(message.Client, sType, "", false)
 
 	if !valid {
-		handler.ErrorResponse(message, err)
+		wshandler.ErrorResponse(message, err)
 		return
 	}
 
-	handler.SuccessResponse(message)
+	wshandler.SuccessResponse(message)
 }
 
-func UpdateStatus(client *bridge.Client, sType uint, status string, set bool) (bool, string) {
+func UpdateStatus(client *pipesfiber.Client, sType uint, status string, set bool) (bool, string) {
 
 	// Send event through pipe
 	res, err := util.PostRequest("/account/friends/online", map[string]interface{}{

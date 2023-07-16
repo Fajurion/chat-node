@@ -1,8 +1,8 @@
 package account
 
-import "chat-node/handler"
+import "github.com/Fajurion/pipesfiber/wshandler"
 
 func SetupActions() {
-	handler.Routes["acc_st"] = changeStatus
-	handler.Routes["acc_on"] = setOnline
+	wshandler.Routes["acc_st"] = changeStatus
+	wshandler.Routes["acc_on"] = setOnline
 }

@@ -1,13 +1,13 @@
 package auth
 
 import (
-	"chat-node/bridge"
 	"chat-node/database"
 	"chat-node/database/fetching"
 	"chat-node/util"
 	"chat-node/util/requests"
 	"log"
 
+	"github.com/Fajurion/pipesfiber"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -38,11 +38,18 @@ func initializeConnection(c *fiber.Ctx) error {
 	tk := util.GenerateToken(200)
 
 	// Check if there are too many users
-	if bridge.GetConnections(req.UserID) >= 3 {
+	if pipesfiber.GetConnections(req.UserID) >= 3 {
 		return requests.FailedRequest(c, "too.many.connections", nil)
 	}
 
-	bridge.AddToken(tk, req.UserID, req.Session, req.Username, req.Tag)
+	pipesfiber.AddToken(tk, pipesfiber.ConnectionToken{
+		UserID:  req.UserID,
+		Session: req.Session,
+		Data: util.UserData{
+			Username: req.Username,
+			Tag:      req.Tag,
+		},
+	})
 
 	return c.JSON(fiber.Map{
 		"success": true,

@@ -3,19 +3,19 @@ package friends
 import (
 	"chat-node/database"
 	"chat-node/database/fetching"
-	"chat-node/handler"
 	"chat-node/util"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
+	"github.com/Fajurion/pipesfiber/wshandler"
 	"github.com/gofiber/fiber/v2"
 )
 
 // Action: fr_rq
-func friendRequest(message handler.Message) {
+func friendRequest(message wshandler.Message) {
 
 	if message.ValidateForm("username", "tag", "signature") {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -32,19 +32,19 @@ func friendRequest(message handler.Message) {
 	})
 
 	if err != nil {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
 	success := res["success"].(bool)
 
 	if !success {
-		handler.ErrorResponse(message, res["error"].(string))
+		wshandler.ErrorResponse(message, res["error"].(string))
 		return
 	}
 
 	if res["action"] == nil {
-		handler.SuccessResponse(message)
+		wshandler.SuccessResponse(message)
 		return
 	}
 
@@ -58,6 +58,7 @@ func friendRequest(message handler.Message) {
 	friend := res["friend"].(string)
 	signature := res["signature"].(string)
 	key := res["key"].(string)
+	userData := message.Client.Data.(util.UserData)
 
 	switch action {
 	case "accept":
@@ -67,7 +68,7 @@ func friendRequest(message handler.Message) {
 			Where("action = ? AND account IN ? AND target IN ?", "fr_rem", []string{message.Client.ID, friend}, []string{message.Client.ID, friend}).
 			Delete(&fetching.Action{})
 
-		handler.NormalResponse(message, map[string]interface{}{
+		wshandler.NormalResponse(message, map[string]interface{}{
 			"success": true,
 			"message": "accepted",
 			"name":    username,
@@ -82,8 +83,8 @@ func friendRequest(message handler.Message) {
 				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
 					"status":    "accepted",
-					"name":      message.Client.Username,
-					"tag":       message.Client.Tag,
+					"name":      userData.Username,
+					"tag":       userData.Tag,
 					"id":        message.Client.ID,
 					"signature": signature,
 					"key":       key,
@@ -92,7 +93,7 @@ func friendRequest(message handler.Message) {
 		})
 
 	case "send":
-		handler.NormalResponse(message, map[string]interface{}{
+		wshandler.NormalResponse(message, map[string]interface{}{
 			"success": true,
 			"message": "sent",
 			"name":    username,
@@ -107,8 +108,8 @@ func friendRequest(message handler.Message) {
 				Name:   "fr_rq:l",
 				Data: map[string]interface{}{
 					"status":    "sent",
-					"name":      message.Client.Username,
-					"tag":       message.Client.Tag,
+					"name":      userData.Username,
+					"tag":       userData.Tag,
 					"id":        message.Client.ID,
 					"signature": signature,
 					"key":       key,

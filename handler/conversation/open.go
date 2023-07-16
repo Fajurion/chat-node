@@ -4,7 +4,6 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/database/fetching"
-	"chat-node/handler"
 	"chat-node/util"
 	"fmt"
 	"log"
@@ -12,14 +11,15 @@ import (
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
+	"github.com/Fajurion/pipesfiber/wshandler"
 	"github.com/bytedance/sonic"
 )
 
 // Action: conv_open
-func openConversation(message handler.Message) {
+func openConversation(message wshandler.Message) {
 
 	if message.ValidateForm("members", "data", "keys") {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -29,7 +29,7 @@ func openConversation(message handler.Message) {
 	}
 
 	if len(members) > 100 {
-		handler.ErrorResponse(message, "member.limit")
+		wshandler.ErrorResponse(message, "member.limit")
 		return
 	}
 
@@ -38,13 +38,13 @@ func openConversation(message handler.Message) {
 
 	err := sonic.UnmarshalString(message.Data["keys"].(string), &keys)
 	if err != nil {
-		handler.ErrorResponse(message, "sonic.slipped")
+		wshandler.ErrorResponse(message, "sonic.slipped")
 		return
 	}
 
 	if len(keys) != len(members)+1 {
 		log.Println("keys", len(keys), "members", len(members))
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -57,7 +57,7 @@ func openConversation(message handler.Message) {
 	})
 
 	if err != nil {
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
@@ -65,7 +65,7 @@ func openConversation(message handler.Message) {
 
 		log.Println("server")
 
-		handler.ErrorResponse(message, res["error"].(string))
+		wshandler.ErrorResponse(message, res["error"].(string))
 		return
 	}
 
@@ -80,7 +80,7 @@ func openConversation(message handler.Message) {
 	}
 
 	if database.DBConn.Create(&conversation).Error != nil {
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
@@ -99,7 +99,7 @@ func openConversation(message handler.Message) {
 			Account:      member,
 		}
 		if database.DBConn.Create(&memberObj).Error != nil {
-			handler.ErrorResponse(message, "server.error")
+			wshandler.ErrorResponse(message, "server.error")
 			return
 		}
 
@@ -131,9 +131,9 @@ func openConversation(message handler.Message) {
 
 	if err != nil {
 		log.Println(err)
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
-	handler.SuccessResponse(message)
+	wshandler.SuccessResponse(message)
 }

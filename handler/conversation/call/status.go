@@ -4,23 +4,23 @@ import (
 	"chat-node/calls"
 	"chat-node/database"
 	"chat-node/database/conversations"
-	"chat-node/handler"
 	"context"
 	"fmt"
 
+	"github.com/Fajurion/pipesfiber/wshandler"
 	"github.com/livekit/protocol/livekit"
 )
 
-func status(message handler.Message) {
+func status(message wshandler.Message) {
 
 	if message.ValidateForm("id") {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
 	// Check if user is member
 	if database.DBConn.Model(&conversations.Member{}).Where("conversation = ?", message.Data["id"]).Error != nil {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -30,7 +30,7 @@ func status(message handler.Message) {
 	})
 
 	if err != nil {
-		handler.NormalResponse(message, map[string]interface{}{
+		wshandler.NormalResponse(message, map[string]interface{}{
 			"success": true,
 			"call":    false,
 		})
@@ -42,7 +42,7 @@ func status(message handler.Message) {
 		participants = append(participants, participant.Identity)
 	}
 
-	handler.NormalResponse(message, map[string]interface{}{
+	wshandler.NormalResponse(message, map[string]interface{}{
 		"success": true,
 		"call":    true,
 		"members": participants,

@@ -3,18 +3,18 @@ package message
 import (
 	"chat-node/database"
 	"chat-node/database/conversations"
-	"chat-node/handler"
 	"chat-node/util/requests"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
+	"github.com/Fajurion/pipesfiber/wshandler"
 )
 
 // Action: conv_msg_update
-func updateMessage(message handler.Message) {
+func updateMessage(message wshandler.Message) {
 
 	if message.ValidateForm("conversation", "data", "certificate", "id") {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -24,25 +24,25 @@ func updateMessage(message handler.Message) {
 	id := message.Data["id"].(string)
 
 	if conversations.CheckSize(data) {
-		handler.ErrorResponse(message, "too.big")
+		wshandler.ErrorResponse(message, "too.big")
 		return
 	}
 
 	var chatMessage conversations.Message
 	var conversation conversations.Conversation
 	if database.DBConn.Raw("SELECT * FROM conversations AS c1 WHERE EXISTS ( SELECT * FROM members AS m1 WHERE m1.conversation = c1.id AND m1.account = ? ) AND c1.id = ?", message.Client.ID, conversationId).Scan(&conversation).Error != nil {
-		handler.ErrorResponse(message, "not.found")
+		wshandler.ErrorResponse(message, "not.found")
 		return
 	}
 
 	claims, valid := conversations.GetCertificateClaims(certificate)
 	if !valid {
-		handler.ErrorResponse(message, "invalid.certificate")
+		wshandler.ErrorResponse(message, "invalid.certificate")
 		return
 	}
 
 	if !claims.Valid(id, message.Client.ID) {
-		handler.ErrorResponse(message, "invalid.certificate")
+		wshandler.ErrorResponse(message, "invalid.certificate")
 		return
 	}
 
@@ -57,11 +57,11 @@ func updateMessage(message handler.Message) {
 		}
 
 		if database.DBConn.Create(&chatMessage).Error != nil {
-			handler.ErrorResponse(message, "server.error")
+			wshandler.ErrorResponse(message, "server.error")
 			return
 		}
 
-		handler.NormalResponse(message, map[string]interface{}{
+		wshandler.NormalResponse(message, map[string]interface{}{
 			"success": true,
 			"id":      id,
 		})
@@ -69,14 +69,14 @@ func updateMessage(message handler.Message) {
 	}
 
 	if database.DBConn.Model(&chatMessage).Update("data", data).Update("edited", true).Error != nil {
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
 	// Send to the conversation
 	members, nodes, err := requests.LoadConversationDetails(conversation.ID)
 	if err != nil {
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
@@ -94,7 +94,7 @@ func updateMessage(message handler.Message) {
 		},
 	})
 
-	handler.NormalResponse(message, map[string]interface{}{
+	wshandler.NormalResponse(message, map[string]interface{}{
 		"success": true,
 		"id":      id,
 	})

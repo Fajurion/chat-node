@@ -1,7 +1,6 @@
 package service
 
 import (
-	"chat-node/bridge"
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/database/fetching"
@@ -9,9 +8,10 @@ import (
 	"time"
 
 	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipesfiber"
 )
 
-func setup_mes(client *bridge.Client, current *fetching.Session, account *string) bool {
+func setup_mes(client *pipesfiber.Client, current *fetching.Session, account *string) bool {
 
 	// Delete old messages (for now 1 week old messages)
 	database.DBConn.

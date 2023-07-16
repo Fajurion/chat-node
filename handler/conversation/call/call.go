@@ -1,11 +1,11 @@
 package call
 
 import (
-	"chat-node/handler"
+	"github.com/Fajurion/pipesfiber/wshandler"
 )
 
 func SetupActions() {
-	handler.Routes["c_s"] = start
-	handler.Routes["c_j"] = join
-	handler.Routes["c_c"] = status
+	wshandler.Routes["c_s"] = start
+	wshandler.Routes["c_j"] = join
+	wshandler.Routes["c_c"] = status
 }

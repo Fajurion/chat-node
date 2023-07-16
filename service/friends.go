@@ -1,12 +1,12 @@
 package service
 
 import (
-	"chat-node/bridge"
 	"chat-node/database"
 	"chat-node/database/fetching"
 	"chat-node/util"
 
 	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipesfiber"
 )
 
 type statusEntity struct {
@@ -16,7 +16,7 @@ type statusEntity struct {
 }
 
 // Setup the friends of the user (online)
-func setup_fr(client *bridge.Client, account *string, current *fetching.Session) bool {
+func setup_fr(client *pipesfiber.Client, account *string, current *fetching.Session) bool {
 
 	// Get the friends of the user
 	res, err := util.PostRequest("/account/friends/online", map[string]interface{}{

@@ -1,19 +1,19 @@
 package friends
 
 import (
-	"chat-node/handler"
 	"chat-node/util"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
+	"github.com/Fajurion/pipesfiber/wshandler"
 	"github.com/gofiber/fiber/v2"
 )
 
 // Action: fr_rq_deny
-func denyFriendRequest(message handler.Message) {
+func denyFriendRequest(message wshandler.Message) {
 
 	if message.ValidateForm("id") {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -33,19 +33,19 @@ func denyFriendRequest(message handler.Message) {
 	success := res["success"].(bool)
 
 	if !success {
-		handler.ErrorResponse(message, res["error"].(string))
+		wshandler.ErrorResponse(message, res["error"].(string))
 		return
 	}
 
 	if res["action"] == nil {
-		handler.SuccessResponse(message)
+		wshandler.SuccessResponse(message)
 		return
 	}
 
 	action := res["action"].(string)
 
 	if action != "deny" {
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
@@ -56,6 +56,7 @@ func denyFriendRequest(message handler.Message) {
 		Token: nodeRaw["token"].(string),
 	}
 	friend := res["friend"].(string)
+	userData := message.Client.Data.(util.UserData)
 
 	send.Socketless(nodeEntity, pipes.Message{
 		Channel: pipes.BroadcastChannel([]string{friend}),
@@ -64,12 +65,12 @@ func denyFriendRequest(message handler.Message) {
 			Name:   "fr_rq:l",
 			Data: map[string]interface{}{
 				"status":   "denied",
-				"username": message.Client.Username,
-				"tag":      message.Client.Tag,
+				"username": userData.Username,
+				"tag":      userData.Tag,
 				"id":       message.Client.ID,
 			},
 		},
 	})
 
-	handler.StatusResponse(message, "denied")
+	wshandler.StatusResponse(message, "denied")
 }

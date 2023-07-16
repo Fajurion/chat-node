@@ -4,8 +4,9 @@ go 1.20
 
 require (
 	fajurion.com/node-integration v0.0.0-00010101000000-000000000000
-	github.com/Fajurion/pipes v0.0.0-20230427150034-9014f5e874c4
-	github.com/gofiber/fiber/v2 v2.44.0
+	github.com/Fajurion/pipes v0.0.0-20230714142350-889e49e3046d
+	github.com/Fajurion/pipesfiber v0.0.0-00010101000000-000000000000
+	github.com/gofiber/fiber/v2 v2.46.0
 	github.com/livekit/protocol v1.4.2
 	github.com/livekit/server-sdk-go v1.0.8
 )
@@ -14,12 +15,15 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eapache/channels v1.1.0 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/frostbyte73/go-throttle v0.0.0-20210621200530-8018c891361d // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
@@ -46,6 +50,7 @@ require (
 	github.com/pion/turn/v2 v2.1.0 // indirect
 	github.com/pion/udp v0.1.4 // indirect
 	github.com/pion/webrtc/v3 v3.1.55 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.14.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
@@ -79,7 +84,7 @@ require (
 )
 
 require (
-	github.com/cornelk/hashmap v1.0.8
+	github.com/cornelk/hashmap v1.0.8 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/philhofer/fwd v1.1.2 // indirect
 	github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94 // indirect
@@ -87,7 +92,7 @@ require (
 )
 
 require (
-	github.com/bytedance/sonic v1.8.8
+	github.com/bytedance/sonic v1.9.2
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
@@ -96,8 +101,8 @@ require (
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
-	github.com/fasthttp/websocket v1.5.1 // indirect
-	github.com/gofiber/websocket/v2 v2.1.4
+	github.com/fasthttp/websocket v1.5.3 // indirect
+	github.com/gofiber/websocket/v2 v2.2.1
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.18 // indirect
@@ -105,13 +110,13 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.46.0 // indirect
+	github.com/valyala/fasthttp v1.47.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
 )
 
 replace fajurion.com/node-integration => ./node-integration
 
 replace github.com/Fajurion/pipes => ./pipes
 
-replace github.com/Fajurion/pipes-fiber => ./pipes-fiber
+replace github.com/Fajurion/pipesfiber => ./pipes-fiber

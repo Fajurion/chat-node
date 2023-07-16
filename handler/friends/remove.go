@@ -3,18 +3,18 @@ package friends
 import (
 	"chat-node/database"
 	"chat-node/database/fetching"
-	"chat-node/handler"
 	"chat-node/util"
 
+	"github.com/Fajurion/pipesfiber/wshandler"
 	"github.com/gofiber/fiber/v2"
 )
 
 // Action: fr_rem
-func removeFriend(message handler.Message) {
+func removeFriend(message wshandler.Message) {
 
 	// Check if request is valid
 	if message.ValidateForm("id") {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -30,12 +30,12 @@ func removeFriend(message handler.Message) {
 	})
 
 	if err != nil {
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
 	if !res["success"].(bool) {
-		handler.ErrorResponse(message, res["error"].(string))
+		wshandler.ErrorResponse(message, res["error"].(string))
 		return
 	}
 
@@ -54,5 +54,5 @@ func removeFriend(message handler.Message) {
 		Target:  message.Client.ID,
 	})
 
-	handler.SuccessResponse(message)
+	wshandler.SuccessResponse(message)
 }

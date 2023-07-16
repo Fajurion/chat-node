@@ -1,7 +1,6 @@
 package service
 
 import (
-	"chat-node/bridge"
 	"chat-node/database"
 	"chat-node/database/fetching"
 	"chat-node/util"
@@ -9,17 +8,19 @@ import (
 	"time"
 
 	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipesfiber"
 )
 
-func User(client *bridge.Client) bool {
+func User(client *pipesfiber.Client) bool {
 	session := client.Session
 	account := client.ID
+	data := client.Data.(util.UserData)
 
 	client.SendEvent(pipes.Event{
 		Name: "setup_wel",
 		Data: map[string]interface{}{
-			"name": client.Username,
-			"tag":  client.Tag,
+			"name": data.Username,
+			"tag":  data.Tag,
 		},
 	})
 
@@ -98,7 +99,7 @@ func User(client *bridge.Client) bool {
 	current.LastFetch = time.Now().UnixMilli()
 	current.Node = util.NodeTo64(pipes.CurrentNode.ID)
 	if database.DBConn.Save(&current).Error != nil {
-		bridge.Remove(client.ID, client.Session)
+		pipesfiber.Remove(client.ID, client.Session)
 		return false
 	}
 

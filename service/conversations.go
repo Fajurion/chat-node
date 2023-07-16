@@ -1,15 +1,15 @@
 package service
 
 import (
-	"chat-node/bridge"
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/database/fetching"
 
 	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipesfiber"
 )
 
-func setup_conv(client *bridge.Client, account *string, current *fetching.Session) bool {
+func setup_conv(client *pipesfiber.Client, account *string, current *fetching.Session) bool {
 
 	var conversationList []conversations.Conversation
 	database.DBConn.Raw("SELECT * FROM conversations AS c1 WHERE created_at > ? AND EXISTS ( SELECT conversation FROM members AS mem1 WHERE account = ? AND mem1.conversation = c1.id )", current.LastFetch, *account).Scan(&conversationList)

@@ -4,17 +4,17 @@ import (
 	"chat-node/calls"
 	"chat-node/database"
 	"chat-node/database/conversations"
-	"chat-node/handler"
 	"context"
 	"fmt"
 
+	"github.com/Fajurion/pipesfiber/wshandler"
 	"github.com/livekit/protocol/livekit"
 )
 
-func start(message handler.Message) {
+func start(message wshandler.Message) {
 
 	if message.ValidateForm("id") {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 
 		println("invalid form")
 		return
@@ -25,7 +25,7 @@ func start(message handler.Message) {
 
 	// Check if user is member of the conversation
 	if database.DBConn.Where("conversation = ? AND account = ?", id, message.Client.ID).Find(&conversations.Member{}).Error != nil {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -42,11 +42,11 @@ func start(message handler.Message) {
 		tk, err := calls.GetJoinToken(roomName, message.Client.ID)
 
 		if err != nil {
-			handler.ErrorResponse(message, "server.error")
+			wshandler.ErrorResponse(message, "server.error")
 			return
 		}
 
-		handler.NormalResponse(message, map[string]interface{}{
+		wshandler.NormalResponse(message, map[string]interface{}{
 			"success": true,
 			"call":    true,
 			"id":      id,
@@ -60,11 +60,11 @@ func start(message handler.Message) {
 	token, err := calls.GenerateCallToken(roomName, message.Client.ID)
 
 	if err != nil {
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
-	handler.NormalResponse(message, map[string]interface{}{
+	wshandler.NormalResponse(message, map[string]interface{}{
 		"success": true,
 		"call":    false,
 		"id":      id,

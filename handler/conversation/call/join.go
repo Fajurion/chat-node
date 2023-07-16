@@ -4,19 +4,19 @@ import (
 	"chat-node/calls"
 	"chat-node/database"
 	"chat-node/database/conversations"
-	"chat-node/handler"
 	"chat-node/util/requests"
 	"context"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
+	"github.com/Fajurion/pipesfiber/wshandler"
 	"github.com/livekit/protocol/livekit"
 )
 
-func join(message handler.Message) {
+func join(message wshandler.Message) {
 
 	if message.ValidateForm("id", "token") {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -25,25 +25,25 @@ func join(message handler.Message) {
 	claims, valid := calls.GetCallClaims(token)
 
 	if !valid {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
 	// Check if joiner is the same as the creator
 	if claims.Ow == message.Client.ID {
-		handler.ErrorResponse(message, "no.join")
+		wshandler.ErrorResponse(message, "no.join")
 		return
 	}
 
 	// Check if room name is valid
 	if !claims.Valid(id) {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
 	// Check if user is member of the conversation
 	if database.DBConn.Where("conversation = ? AND account = ?", id, message.Client.ID).Find(&conversations.Member{}).Error != nil {
-		handler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -58,11 +58,11 @@ func join(message handler.Message) {
 		tk, err := calls.GetJoinToken(claims.CID, message.Client.ID)
 
 		if err != nil {
-			handler.ErrorResponse(message, "server.error")
+			wshandler.ErrorResponse(message, "server.error")
 			return
 		}
 
-		handler.NormalResponse(message, map[string]interface{}{
+		wshandler.NormalResponse(message, map[string]interface{}{
 			"success": true,
 			"token":   tk,
 		})
@@ -75,7 +75,7 @@ func join(message handler.Message) {
 	})
 
 	if err != nil {
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
@@ -83,14 +83,14 @@ func join(message handler.Message) {
 	tk, err := calls.GetJoinToken(claims.CID, message.Client.ID)
 
 	if err != nil {
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
 	// Send to the conversation
 	members, nodes, err := requests.LoadConversationDetails(id)
 	if err != nil {
-		handler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, "server.error")
 		return
 	}
 
@@ -118,7 +118,7 @@ func join(message handler.Message) {
 		Channel: pipes.BroadcastChannel([]string{claims.Ow}),
 	})
 
-	handler.NormalResponse(message, map[string]interface{}{
+	wshandler.NormalResponse(message, map[string]interface{}{
 		"success": true,
 		"token":   tk,
 	})

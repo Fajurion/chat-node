@@ -3,7 +3,7 @@ package main
 import (
 	"chat-node/calls"
 	"chat-node/database"
-	handlerCreate "chat-node/handler/create"
+	"chat-node/handler"
 	"chat-node/processors"
 	"chat-node/routes"
 	"chat-node/util"
@@ -59,7 +59,7 @@ func main() {
 	calls.Connect()
 
 	// Create handlers
-	handlerCreate.Create()
+	handler.Create()
 
 	// Initialize processors
 	processors.SetupProcessors()

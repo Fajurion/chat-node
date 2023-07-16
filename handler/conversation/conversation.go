@@ -1,14 +1,15 @@
 package conversation
 
 import (
-	"chat-node/handler"
 	"chat-node/handler/conversation/call"
 	"chat-node/handler/conversation/message"
+
+	"github.com/Fajurion/pipesfiber/wshandler"
 )
 
 func SetupActions() {
-	handler.Routes["conv_open"] = openConversation
-	handler.Routes["conv_mem"] = getConversationMembers
+	wshandler.Routes["conv_open"] = openConversation
+	wshandler.Routes["conv_mem"] = getConversationMembers
 
 	message.SetupActions()
 	call.SetupActions()
