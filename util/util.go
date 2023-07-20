@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"log"
 	"math/big"
 	"net/http"
 	"strconv"
@@ -48,8 +49,13 @@ func PostRequest(url string, body map[string]interface{}) (map[string]interface{
 
 func PostRaw(url string, body map[string]interface{}) (map[string]interface{}, error) {
 
-	req, _ := sonic.Marshal(body)
+	req, err := sonic.Marshal(body)
 
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println(string(req))
 	reader := strings.NewReader(string(req))
 
 	res, err := http.Post(url, "application/json", reader)

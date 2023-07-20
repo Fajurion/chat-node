@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	integration "fajurion.com/node-integration"
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipesfiber"
 )
@@ -78,11 +79,17 @@ func User(client *pipesfiber.Client) bool {
 		return false
 	}
 
-	log.Println("Fetch:", current.LastFetch)
+	if integration.Testing {
+		log.Println("Fetch:", current.LastFetch)
+	}
 
 	// Get new actions
 	if !setup_act(client, &current, &firstFetch) {
 		return false
+	}
+
+	if integration.Testing {
+		log.Println("setup_act finished for", client.ID)
 	}
 
 	// Get new messages
@@ -90,9 +97,18 @@ func User(client *pipesfiber.Client) bool {
 		return false
 	}
 
+	if integration.Testing {
+		log.Println("setup_mes finished for", client.ID)
+	}
+
 	// Get online friends
-	if !setup_fr(client, &account, &current) {
+	if err := setup_fr(client, &account, &current); err != nil {
+		log.Println(err)
 		return false
+	}
+
+	if integration.Testing {
+		log.Println("setup_fr finished for", client.ID)
 	}
 
 	// Save the session

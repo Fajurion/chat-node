@@ -6,6 +6,7 @@ import (
 	"chat-node/routes/auth"
 	"chat-node/routes/ping"
 	"chat-node/service"
+	"log"
 	"time"
 
 	integration "fajurion.com/node-integration"
@@ -30,13 +31,21 @@ func Setup(router fiber.Router) {
 
 		// Handle client disconnect
 		ClientDisconnectHandler: func(client *pipesfiber.Client) {
+			if integration.Testing {
+				log.Println("Client disconnected:", client.ID)
+			}
 			account.UpdateStatus(client, fetching.StatusOffline, "", false)
 		},
 
 		// Handle enter network
 		ClientConnectHandler: func(client *pipesfiber.Client) bool {
+			if integration.Testing {
+				log.Println("Client connected:", client.ID)
+			}
 			disconnect := !service.User(client)
-			// TODO: Log something
+			if disconnect {
+				log.Println("Something went wrong with setup: ", client.ID)
+			}
 			return disconnect
 		},
 	})

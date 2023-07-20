@@ -38,7 +38,7 @@ func main() {
 		JSONDecoder: sonic.Unmarshal,
 	})
 
-	pipes.SetupCurrent(integration.NODE_ID, integration.NODE_TOKEN)
+	pipes.SetupCurrent(fmt.Sprintf("%d", integration.NODE_ID), integration.NODE_TOKEN)
 
 	// Query current node
 	_, tk, currentApp, domain := integration.GetCurrent()
