@@ -55,7 +55,7 @@ func PostRaw(url string, body map[string]interface{}) (map[string]interface{}, e
 		return nil, err
 	}
 
-	log.Println(string(req))
+	log.Println("request to", string(url))
 	reader := strings.NewReader(string(req))
 
 	res, err := http.Post(url, "application/json", reader)

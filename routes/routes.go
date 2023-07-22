@@ -43,10 +43,16 @@ func Setup(router fiber.Router) {
 				log.Println("Client connected:", client.ID)
 			}
 			disconnect := !service.User(client)
+			log.Println("Setup finish")
 			if disconnect {
 				log.Println("Something went wrong with setup: ", client.ID)
 			}
 			return disconnect
+		},
+
+		// Handle client entering network
+		ClientEnterNetworkHandler: func(client *pipesfiber.Client) bool {
+			return false
 		},
 	})
 	router.Route("/", pipesfroutes.SetupRoutes)
