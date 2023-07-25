@@ -36,7 +36,7 @@ func Connect() {
 
 	// Migrate the schema
 	db.AutoMigrate(&conversations.Conversation{})
-	db.AutoMigrate(&conversations.Member{})
+	db.AutoMigrate(&conversations.ConversationToken{})
 	db.AutoMigrate(&conversations.Message{})
 	db.AutoMigrate(&fetching.Session{})
 	db.AutoMigrate(&fetching.Status{})

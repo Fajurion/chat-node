@@ -7,7 +7,6 @@ import (
 	"chat-node/util"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
@@ -18,17 +17,16 @@ import (
 // Action: conv_open
 func openConversation(message wshandler.Message) {
 
-	if message.ValidateForm("members", "data", "keys") {
+	if message.ValidateForm("tokens", "data", "keys") {
 		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
-	var members []string
-	for _, member := range message.Data["members"].([]interface{}) {
-		members = append(members, member.(string))
-	}
+	// TODO: Fix conversation opening
 
-	if len(members) > 100 {
+	tokens := uint(message.Data["tokens"].(float64))
+
+	if tokens > 100 {
 		wshandler.ErrorResponse(message, "member.limit")
 		return
 	}
@@ -72,11 +70,8 @@ func openConversation(message wshandler.Message) {
 	members = append(members, message.Client.ID)
 
 	var conversation = conversations.Conversation{
-		ID:        util.GenerateToken(12),
-		Type:      "chat",
-		Creator:   message.Client.ID,
-		Data:      data,
-		CreatedAt: time.Now().UnixMilli(),
+		ID:   util.GenerateToken(12),
+		Data: data,
 	}
 
 	if database.DBConn.Create(&conversation).Error != nil {
