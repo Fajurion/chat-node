@@ -4,8 +4,6 @@ import (
 	"chat-node/database"
 	"chat-node/database/fetching"
 	"chat-node/util"
-	"log"
-	"time"
 
 	integration "fajurion.com/node-integration"
 	"github.com/Fajurion/pipes"
@@ -15,15 +13,6 @@ import (
 func User(client *pipesfiber.Client) bool {
 	session := client.Session
 	account := client.ID
-	data := client.Data.(util.UserData)
-
-	client.SendEvent(pipes.Event{
-		Name: "setup_wel",
-		Data: map[string]interface{}{
-			"name": data.Username,
-			"tag":  data.Tag,
-		},
-	})
 
 	// Check if the account is already in the database
 	var status fetching.Status
@@ -31,10 +20,9 @@ func User(client *pipesfiber.Client) bool {
 
 		// Create a new status
 		if database.DBConn.Create(&fetching.Status{
-			ID:     account,
-			Type:   fetching.StatusOnline,
-			Status: "-",
-			Node:   util.NodeTo64(pipes.CurrentNode.ID),
+			ID:   account,
+			Data: "-", // Status is disabled
+			Node: integration.NODE_ID,
 		}).Error != nil {
 			return false
 		}
@@ -44,18 +32,25 @@ func User(client *pipesfiber.Client) bool {
 		database.DBConn.Model(&fetching.Status{}).Where(&fetching.Status{ID: account}).Update("node", util.NodeTo64(pipes.CurrentNode.ID))
 	}
 
-	// Check if this is a new device
-	var current fetching.Session
-	if database.DBConn.Where(&fetching.Session{ID: session}).Take(&current).Error != nil {
+	// Send current status
+	client.SendEvent(pipes.Event{
+		Name: "setup_st", // :n = new
+		Data: map[string]interface{}{
+			"data": status.Data,
+			"node": status.Node,
+		},
+	})
+
+	// Check if the account already has a mailbox
+	var current fetching.Mailbox
+	if database.DBConn.Where(&fetching.Mailbox{ID: account}).Take(&current).Error != nil {
 
 		// TODO: New device (sync with old device)
 
 		// Save the session
-		current = fetching.Session{
-			ID:        session,
-			Account:   account,
-			Node:      util.NodeTo64(pipes.CurrentNode.ID),
-			LastFetch: 0,
+		current = fetching.Mailbox{
+			ID:    session,
+			Token: util.GenerateToken(util.MailboxTokenLength),
 		}
 
 		if database.DBConn.Create(&current).Error != nil {
@@ -63,27 +58,19 @@ func User(client *pipesfiber.Client) bool {
 		}
 
 		client.SendEvent(pipes.Event{
-			Name: "setup_device",
+			Name: "setup_mail:n", // :n = new
 			Data: map[string]interface{}{
-				"device": client.Session,
+				"new":   true,
+				"token": current.Token,
 			},
 		})
-	}
-
-	// Get the earliest fetch time
-	var firstFetch int64
-	database.DBConn.Raw("SELECT MIN(last_fetch) FROM sessions WHERE account = ?", account).Scan(&firstFetch)
-
-	if integration.Testing {
-		log.Println("Fetch:", current.LastFetch)
-	}
-
-	// Save the session
-	current.LastFetch = time.Now().UnixMilli()
-	current.Node = util.NodeTo64(pipes.CurrentNode.ID)
-	if database.DBConn.Save(&current).Error != nil {
-		pipesfiber.Remove(client.ID, client.Session)
-		return false
+	} else {
+		client.SendEvent(pipes.Event{
+			Name: "setup_mail",
+			Data: map[string]interface{}{
+				"token": current.Token,
+			},
+		})
 	}
 
 	// Send the setup complete event

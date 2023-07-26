@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"chat-node/database/fetching"
-	"chat-node/handler/account"
 	"chat-node/routes/auth"
 	conversation_routes "chat-node/routes/conversations"
 	mailbox_routes "chat-node/routes/mailbox"
@@ -76,7 +74,12 @@ func Setup(router fiber.Router) {
 			if integration.Testing {
 				log.Println("Client disconnected:", client.ID)
 			}
-			account.UpdateStatus(client, fetching.StatusOffline, "", false)
+
+			util.PostRequest("/node/disconnect", map[string]interface{}{
+				"node":    util.NODE_ID,
+				"token":   util.NODE_TOKEN,
+				"session": client.Session,
+			})
 		},
 
 		// Handle enter network

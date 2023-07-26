@@ -38,9 +38,9 @@ func Connect() {
 	db.AutoMigrate(&conversations.Conversation{})
 	db.AutoMigrate(&conversations.ConversationToken{})
 	db.AutoMigrate(&conversations.Message{})
-	db.AutoMigrate(&fetching.Session{})
+	db.AutoMigrate(&fetching.Mailbox{})
+	db.AutoMigrate(&fetching.MailboxEntry{})
 	db.AutoMigrate(&fetching.Status{})
-	db.AutoMigrate(&fetching.Action{})
 
 	// Assign the database to the global variable
 	DBConn = db
