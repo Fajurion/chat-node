@@ -74,41 +74,8 @@ func User(client *pipesfiber.Client) bool {
 	var firstFetch int64
 	database.DBConn.Raw("SELECT MIN(last_fetch) FROM sessions WHERE account = ?", account).Scan(&firstFetch)
 
-	// Get new conversations
-	if !setup_conv(client, &account, &current) {
-		return false
-	}
-
 	if integration.Testing {
 		log.Println("Fetch:", current.LastFetch)
-	}
-
-	// Get new actions
-	if !setup_act(client, &current, &firstFetch) {
-		return false
-	}
-
-	if integration.Testing {
-		log.Println("setup_act finished for", client.ID)
-	}
-
-	// Get new messages
-	if !setup_mes(client, &current, &account) {
-		return false
-	}
-
-	if integration.Testing {
-		log.Println("setup_mes finished for", client.ID)
-	}
-
-	// Get online friends
-	if err := setup_fr(client, &account, &current); err != nil {
-		log.Println(err)
-		return false
-	}
-
-	if integration.Testing {
-		log.Println("setup_fr finished for", client.ID)
 	}
 
 	// Save the session
