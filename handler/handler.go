@@ -2,7 +2,6 @@ package handler
 
 import (
 	"chat-node/handler/account"
-	"chat-node/handler/conversation"
 
 	"github.com/Fajurion/pipesfiber/wshandler"
 )
@@ -10,6 +9,5 @@ import (
 func Create() {
 	wshandler.Initialize()
 
-	conversation.SetupActions()
 	account.SetupActions()
 }

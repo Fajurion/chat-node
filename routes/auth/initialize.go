@@ -10,6 +10,7 @@ import (
 
 type intializeRequest struct {
 	Account   string `json:"account"`
+	Session   string `json:"session"`
 	NodeToken string `json:"node_token"`
 	End       int64  `json:"end"`
 }
@@ -29,17 +30,14 @@ func initializeConnection(c *fiber.Ctx) error {
 	tk := util.GenerateToken(200)
 
 	// Check if there are too many users
-	if pipesfiber.GetConnections(req.UserID) >= 3 {
+	if pipesfiber.GetConnections(req.Account) >= 3 {
 		return requests.FailedRequest(c, "too.many.connections", nil)
 	}
 
 	pipesfiber.AddToken(tk, pipesfiber.ConnectionToken{
-		UserID:  req.UserID,
+		UserID:  req.Account,
 		Session: req.Session,
-		Data: util.UserData{
-			Username: req.Username,
-			Tag:      req.Tag,
-		},
+		Data:    nil,
 	})
 
 	return c.JSON(fiber.Map{
