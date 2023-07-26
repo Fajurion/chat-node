@@ -2,8 +2,6 @@ package call
 
 import (
 	"chat-node/calls"
-	"chat-node/database"
-	"chat-node/database/conversations"
 	"context"
 	"fmt"
 
@@ -24,10 +22,11 @@ func start(message wshandler.Message) {
 	roomName := fmt.Sprintf("c_%d", id)       // Livekit room name
 
 	// Check if user is member of the conversation
-	if database.DBConn.Where("conversation = ? AND account = ?", id, message.Client.ID).Find(&conversations.Member{}).Error != nil {
-		wshandler.ErrorResponse(message, "invalid")
-		return
-	}
+	/*
+		if database.DBConn.Where("conversation = ? AND account = ?", id, message.Client.ID).Find(&conversations.Member{}).Error != nil {
+			wshandler.ErrorResponse(message, "invalid")
+			return
+		} */
 
 	// Check if there is already a call (livekit room)
 	res, _ := calls.RoomClient.ListRooms(context.Background(), &livekit.ListRoomsRequest{

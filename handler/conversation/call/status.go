@@ -2,8 +2,6 @@ package call
 
 import (
 	"chat-node/calls"
-	"chat-node/database"
-	"chat-node/database/conversations"
 	"context"
 	"fmt"
 
@@ -18,11 +16,13 @@ func status(message wshandler.Message) {
 		return
 	}
 
-	// Check if user is member
-	if database.DBConn.Model(&conversations.Member{}).Where("conversation = ?", message.Data["id"]).Error != nil {
-		wshandler.ErrorResponse(message, "invalid")
-		return
-	}
+	/*
+		// Check if user is member
+		if database.DBConn.Model(&conversations.Member{}).Where("conversation = ?", message.Data["id"]).Error != nil {
+			wshandler.ErrorResponse(message, "invalid")
+			return
+		}
+	*/
 
 	// Check for call
 	members, err := calls.RoomClient.ListParticipants(context.Background(), &livekit.ListParticipantsRequest{

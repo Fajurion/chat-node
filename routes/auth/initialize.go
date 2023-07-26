@@ -1,17 +1,15 @@
 package auth
 
 import (
-	"chat-node/database"
-	"chat-node/database/fetching"
 	"chat-node/util"
 	"chat-node/util/requests"
-	"log"
 
 	"github.com/Fajurion/pipesfiber"
 	"github.com/gofiber/fiber/v2"
 )
 
 type intializeRequest struct {
+	Account   string `json:"account"`
 	NodeToken string `json:"node_token"`
 	End       int64  `json:"end"`
 }
@@ -27,9 +25,6 @@ func initializeConnection(c *fiber.Ctx) error {
 	if util.NODE_TOKEN != req.NodeToken {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
-
-	log.Println(req.UserID, "|", req.SessionIds)
-	database.DBConn.Where("account = ?", req.UserID).Not("id IN ?", req.SessionIds).Delete(&fetching.Session{})
 
 	tk := util.GenerateToken(200)
 

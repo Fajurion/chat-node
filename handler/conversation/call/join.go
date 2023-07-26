@@ -2,8 +2,6 @@ package call
 
 import (
 	"chat-node/calls"
-	"chat-node/database"
-	"chat-node/database/conversations"
 	"chat-node/util/requests"
 	"context"
 
@@ -41,11 +39,15 @@ func join(message wshandler.Message) {
 		return
 	}
 
-	// Check if user is member of the conversation
-	if database.DBConn.Where("conversation = ? AND account = ?", id, message.Client.ID).Find(&conversations.Member{}).Error != nil {
-		wshandler.ErrorResponse(message, "invalid")
-		return
-	}
+	// TODO: Fix member check
+
+	/*
+		// Check if user is member of the conversation
+		if database.DBConn.Where("conversation = ? AND account = ?", id, message.Client.ID).Find(&conversations.Member{}).Error != nil {
+			wshandler.ErrorResponse(message, "invalid")
+			return
+		}
+	*/
 
 	// Check if there is already a call (livekit room)
 	res, _ := calls.RoomClient.ListRooms(context.Background(), &livekit.ListRoomsRequest{

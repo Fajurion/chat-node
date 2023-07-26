@@ -1,9 +1,11 @@
 package conversations
 
 type ConversationToken struct {
-	ID    string `json:"id" gorm:"primaryKey"`
-	Token string `json:"token" gorm:"not null"` // Long token required to subscribe to the conversation
-	Rank  uint   `json:"rank" gorm:"not null"`
+	ID           string `json:"id" gorm:"primaryKey"`
+	Conversation string `json:"conversation" gorm:"not null"` // Conversation id
+	Token        string `json:"token" gorm:"not null"`        // Long token required to subscribe to the conversation
+	Data         string `json:"payload" gorm:"not null"`      // Encrypted data about the user (account id, username, etc.)
+	Rank         uint   `json:"rank" gorm:"not null"`
 }
 
 // * Permissions
