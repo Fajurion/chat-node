@@ -29,7 +29,7 @@ func User(client *pipesfiber.Client) bool {
 	} else {
 
 		// Update the status
-		database.DBConn.Model(&fetching.Status{}).Where(&fetching.Status{ID: account}).Update("node", util.NodeTo64(pipes.CurrentNode.ID))
+		database.DBConn.Model(&fetching.Status{}).Where("id = ?", account).Update("node", util.NodeTo64(pipes.CurrentNode.ID))
 	}
 
 	// Send current status
@@ -60,7 +60,6 @@ func User(client *pipesfiber.Client) bool {
 		client.SendEvent(pipes.Event{
 			Name: "setup_mail:n", // :n = new
 			Data: map[string]interface{}{
-				"new":   true,
 				"token": current.Token,
 			},
 		})

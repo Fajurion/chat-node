@@ -21,8 +21,9 @@ func (r *OpenConversationRequest) Validate() bool {
 }
 
 type returnableToken struct {
-	ID    string `json:"id"`
-	Token string `json:"token"`
+	ID       string `json:"id"`
+	PubToken string `json:"pub_token"`
+	SubToken string `json:"sub_token"`
 }
 
 func openConversation(c *fiber.Ctx) error {
@@ -53,9 +54,8 @@ func openConversation(c *fiber.Ctx) error {
 
 	// Create conversation
 	conv := conversations.Conversation{
-		ID:                util.GenerateToken(util.ConversationIDLength),
-		SubscriptionToken: util.GenerateToken(util.ConversationSubTokenLength),
-		Data:              req.Data,
+		ID:   util.GenerateToken(util.ConversationIDLength),
+		Data: req.Data,
 	}
 
 	if err := database.DBConn.Create(&conv).Error; err != nil {
@@ -65,12 +65,15 @@ func openConversation(c *fiber.Ctx) error {
 	// Create tokens
 	var tokens map[string]returnableToken = make(map[string]returnableToken)
 	for _, memberData := range req.Members {
-		token := util.GenerateToken(util.ConversationTokenLength)
+
+		pubToken := util.GenerateToken(util.ConversationPubTokenLength)
+		subToken := util.GenerateToken(util.ConversationSubTokenLength)
 
 		tk := conversations.ConversationToken{
 			ID:           util.GenerateToken(util.ConversationTokenIDLength),
-			Token:        token,
 			Conversation: conv.ID,
+			PubToken:     pubToken,
+			SubToken:     subToken,
 			Rank:         conversations.RankUser,
 			Data:         memberData,
 		}
@@ -80,14 +83,16 @@ func openConversation(c *fiber.Ctx) error {
 		}
 
 		tokens[util.HashString(memberData)] = returnableToken{
-			ID:    tk.ID,
-			Token: token,
+			ID:       tk.ID,
+			PubToken: pubToken,
+			SubToken: subToken,
 		}
 	}
 
 	adminToken := conversations.ConversationToken{
 		ID:           util.GenerateToken(util.ConversationTokenIDLength),
-		Token:        util.GenerateToken(util.ConversationTokenLength),
+		SubToken:     util.GenerateToken(util.ConversationSubTokenLength),
+		PubToken:     util.GenerateToken(util.ConversationPubTokenLength),
 		Conversation: conv.ID,
 		Rank:         conversations.RankAdmin,
 		Data:         req.AccountData,
@@ -95,10 +100,10 @@ func openConversation(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"conversation": conv.ID,
-		"sub_token":    conv.SubscriptionToken,
 		"admin_token": returnableToken{
-			ID:    adminToken.ID,
-			Token: adminToken.Token,
+			ID:       adminToken.ID,
+			PubToken: adminToken.PubToken,
+			SubToken: adminToken.SubToken,
 		},
 		"tokens": tokens,
 	})

@@ -25,9 +25,7 @@ func Setup(router fiber.Router) {
 	router.Route("/auth", auth.Setup)
 	router.Post("/ping", ping.Pong)
 
-	// Authorized routes (for accounts with remote id only)
-	router.Route("/conversations", conversation_routes.SetupRoutes)
-	router.Route("/mailbox", mailbox_routes.SetupRoutes)
+	setupPipesFiber(router)
 
 	// Authorized by using a remote id or normal token
 	router.Use(jwtware.New(jwtware.Config{
@@ -60,6 +58,12 @@ func Setup(router fiber.Router) {
 		},
 	}))
 
+	// Authorized routes (for accounts with remote id only)
+	router.Route("/conversations", conversation_routes.SetupRoutes)
+	router.Route("/mailbox", mailbox_routes.SetupRoutes)
+}
+
+func setupPipesFiber(router fiber.Router) {
 	pipesfiber.Setup(pipesfiber.Config{
 		ExpectedConnections: 10_0_0_0,       // 10 thousand, but funny
 		SessionDuration:     time.Hour * 24, // This is kinda important
