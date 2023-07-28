@@ -11,7 +11,6 @@ import (
 )
 
 func User(client *pipesfiber.Client) bool {
-	session := client.Session
 	account := client.ID
 
 	// Check if the account is already in the database
@@ -49,7 +48,7 @@ func User(client *pipesfiber.Client) bool {
 
 		// Save the session
 		current = fetching.Mailbox{
-			ID:    session,
+			ID:    account,
 			Token: util.GenerateToken(util.MailboxTokenLength),
 		}
 
