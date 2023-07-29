@@ -7,6 +7,10 @@ node-integration/*
 pipes-fiber/
 pipes-fiber/*
 
+# Air files
+tmp/
+.air.toml
+
 pipes/
 pipes/*
 .env

@@ -9,6 +9,7 @@ import (
 	"chat-node/util"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -23,6 +24,8 @@ import (
 var APP_ID uint = 0
 
 func main() {
+
+	log.SetOutput(os.Stdout)
 
 	// Setting up the node
 	if !integration.Setup() {
