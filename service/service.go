@@ -40,37 +40,6 @@ func User(client *pipesfiber.Client) bool {
 		},
 	})
 
-	// Check if the account already has a mailbox
-	var current fetching.Mailbox
-	if database.DBConn.Where(&fetching.Mailbox{ID: account}).Take(&current).Error != nil {
-
-		// TODO: New device (sync with old device)
-
-		// Save the session
-		current = fetching.Mailbox{
-			ID:    account,
-			Token: util.GenerateToken(util.MailboxTokenLength),
-		}
-
-		if database.DBConn.Create(&current).Error != nil {
-			return false
-		}
-
-		client.SendEvent(pipes.Event{
-			Name: "setup_mail:n", // :n = new
-			Data: map[string]interface{}{
-				"token": current.Token,
-			},
-		})
-	} else {
-		client.SendEvent(pipes.Event{
-			Name: "setup_mail",
-			Data: map[string]interface{}{
-				"token": current.Token,
-			},
-		})
-	}
-
 	// Send the setup complete event
 	client.SendEvent(pipes.Event{
 		Name: "setup_fin",

@@ -38,8 +38,6 @@ func Connect() {
 	db.AutoMigrate(&conversations.Conversation{})
 	db.AutoMigrate(&conversations.ConversationToken{})
 	db.AutoMigrate(&conversations.Message{})
-	db.AutoMigrate(&fetching.Mailbox{})
-	db.AutoMigrate(&fetching.MailboxEntry{})
 	db.AutoMigrate(&fetching.Status{})
 
 	// Assign the database to the global variable
