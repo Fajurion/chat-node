@@ -21,9 +21,8 @@ func (r *OpenConversationRequest) Validate() bool {
 }
 
 type returnableToken struct {
-	ID       string `json:"id"`
-	PubToken string `json:"pub_token"`
-	SubToken string `json:"sub_token"`
+	ID    string `json:"id"`
+	Token string `json:"token"`
 }
 
 func openConversation(c *fiber.Ctx) error {
@@ -66,14 +65,12 @@ func openConversation(c *fiber.Ctx) error {
 	var tokens map[string]returnableToken = make(map[string]returnableToken)
 	for _, memberData := range req.Members {
 
-		pubToken := util.GenerateToken(util.ConversationPubTokenLength)
-		subToken := util.GenerateToken(util.ConversationSubTokenLength)
+		convToken := util.GenerateToken(util.ConversationTokenLength)
 
 		tk := conversations.ConversationToken{
 			ID:           util.GenerateToken(util.ConversationTokenIDLength),
 			Conversation: conv.ID,
-			PubToken:     pubToken,
-			SubToken:     subToken,
+			Token:        convToken,
 			Rank:         conversations.RankUser,
 			Data:         memberData,
 		}
@@ -83,27 +80,24 @@ func openConversation(c *fiber.Ctx) error {
 		}
 
 		tokens[util.HashString(memberData)] = returnableToken{
-			ID:       tk.ID,
-			PubToken: pubToken,
-			SubToken: subToken,
+			ID: tk.ID,
 		}
 	}
 
 	adminToken := conversations.ConversationToken{
 		ID:           util.GenerateToken(util.ConversationTokenIDLength),
-		SubToken:     util.GenerateToken(util.ConversationSubTokenLength),
-		PubToken:     util.GenerateToken(util.ConversationPubTokenLength),
+		Token:        util.GenerateToken(util.ConversationTokenLength),
 		Conversation: conv.ID,
 		Rank:         conversations.RankAdmin,
 		Data:         req.AccountData,
 	}
 
+	// TODO: Fix that the admin can pretend to be one of the users
 	return c.JSON(fiber.Map{
 		"conversation": conv.ID,
 		"admin_token": returnableToken{
-			ID:       adminToken.ID,
-			PubToken: adminToken.PubToken,
-			SubToken: adminToken.SubToken,
+			ID:    adminToken.ID,
+			Token: adminToken.Token,
 		},
 		"tokens": tokens,
 	})

@@ -7,8 +7,7 @@ const MaxConversationDataLength = 10_000 // Not sure about this number yet, but 
 
 // Conversation tokens
 const ConversationTokenIDLength = 12
-const ConversationPubTokenLength = 32
-const ConversationSubTokenLength = 32
+const ConversationTokenLength = 32
 const MaxConversationTokenDataLength = 2_000 // Not sure about this number yet, but should be good for now
 
 // Mailbox
