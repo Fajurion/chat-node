@@ -70,6 +70,7 @@ func openConversation(c *fiber.Ctx) error {
 		tk := conversations.ConversationToken{
 			ID:           util.GenerateToken(util.ConversationTokenIDLength),
 			Conversation: conv.ID,
+			Activated:    true,
 			Token:        convToken,
 			Rank:         conversations.RankUser,
 			Data:         memberData,
@@ -87,13 +88,19 @@ func openConversation(c *fiber.Ctx) error {
 	adminToken := conversations.ConversationToken{
 		ID:           util.GenerateToken(util.ConversationTokenIDLength),
 		Token:        util.GenerateToken(util.ConversationTokenLength),
+		Activated:    true,
 		Conversation: conv.ID,
 		Rank:         conversations.RankAdmin,
 		Data:         req.AccountData,
 	}
 
+	if err := database.DBConn.Create(&adminToken).Error; err != nil {
+		return integration.FailedRequest(c, "server.error", err)
+	}
+
 	// TODO: Fix that the admin can pretend to be one of the users
 	return c.JSON(fiber.Map{
+		"success":      true,
 		"conversation": conv.ID,
 		"admin_token": returnableToken{
 			ID:    adminToken.ID,
