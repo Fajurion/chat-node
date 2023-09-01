@@ -70,7 +70,7 @@ func openConversation(c *fiber.Ctx) error {
 		tk := conversations.ConversationToken{
 			ID:           util.GenerateToken(util.ConversationTokenIDLength),
 			Conversation: conv.ID,
-			Activated:    true,
+			Activated:    false,
 			Token:        convToken,
 			Rank:         conversations.RankUser,
 			Data:         memberData,
@@ -81,7 +81,8 @@ func openConversation(c *fiber.Ctx) error {
 		}
 
 		tokens[util.HashString(memberData)] = returnableToken{
-			ID: tk.ID,
+			ID:    tk.ID,
+			Token: convToken,
 		}
 	}
 

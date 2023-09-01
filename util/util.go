@@ -3,6 +3,7 @@ package util
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
@@ -127,5 +128,12 @@ func NodeTo64(id string) int64 {
 func HashString(str string) string {
 
 	hashed := sha256.Sum256([]byte(str))
-	return string(hashed[:])
+	return base64.StdEncoding.EncodeToString(hashed[:])
+}
+
+// Hashes using SHA256
+func Hash(str string) []byte {
+
+	hashed := sha256.Sum256([]byte(str))
+	return hashed[:]
 }
