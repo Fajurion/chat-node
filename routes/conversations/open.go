@@ -25,6 +25,7 @@ type returnableToken struct {
 	Token string `json:"token"`
 }
 
+// Route: /conversations/open
 func openConversation(c *fiber.Ctx) error {
 
 	var req OpenConversationRequest
