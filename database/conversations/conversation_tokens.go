@@ -9,6 +9,11 @@ type ConversationToken struct {
 	Rank         uint   `json:"rank" gorm:"not null"`
 }
 
+type SentConversationToken struct {
+	ID    string `json:"id"`
+	Token string `json:"token"`
+}
+
 // * Permissions
 const MinRankManageMembers = RankModerator
 const MinRankChangeConversationDetails = RankModerator

@@ -21,6 +21,8 @@ func subscribe(message wshandler.Message) {
 
 	tokens := message.Data["tokens"].([]interface{})
 
+	// TODO: Validate tokens
+
 	for _, token := range tokens {
 
 		// Register adapter for the subscription

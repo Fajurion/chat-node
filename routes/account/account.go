@@ -1,4 +1,4 @@
-package mailbox_routes
+package account_routes
 
 import "github.com/gofiber/fiber/v2"
 

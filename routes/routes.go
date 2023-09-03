@@ -1,9 +1,9 @@
 package routes
 
 import (
+	account_routes "chat-node/routes/account"
 	"chat-node/routes/auth"
 	conversation_routes "chat-node/routes/conversations"
-	mailbox_routes "chat-node/routes/mailbox"
 	"chat-node/routes/ping"
 	"chat-node/service"
 	"chat-node/util"
@@ -60,7 +60,7 @@ func Setup(router fiber.Router) {
 
 	// Authorized routes (for accounts with remote id only)
 	router.Route("/conversations", conversation_routes.SetupRoutes)
-	router.Route("/mailbox", mailbox_routes.SetupRoutes)
+	router.Route("/account", account_routes.SetupRoutes)
 }
 
 func setupPipesFiber(router fiber.Router) {
