@@ -4,6 +4,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/util"
+	"log"
 
 	integration "fajurion.com/node-integration"
 	"github.com/gofiber/fiber/v2"
@@ -16,10 +17,11 @@ type ActivateConversationRequest struct {
 }
 
 func (r *ActivateConversationRequest) Validate() bool {
-	return len(r.ID) > 0 && len(r.Token) > 0 && len(r.Token) != util.ConversationTokenLength
+	return len(r.ID) > 0 && len(r.Token) > 0 && len(r.Token) == util.ConversationTokenLength
 }
 
 type returnableMember struct {
+	ID   string `json:"id"`
 	Rank uint   `json:"rank"`
 	Data string `json:"data"`
 }
@@ -34,17 +36,18 @@ func activate(c *fiber.Ctx) error {
 
 	// Validate request
 	if !req.Validate() {
+		log.Println(len(req.Token))
 		return integration.InvalidRequest(c)
 	}
 
 	// Activate conversation
 	var token conversations.ConversationToken
-	if err := database.DBConn.Where("id = ? AND token = ?", req.ID, req.Token).First(&token).Error; err != nil {
-		return integration.InvalidRequest(c)
+	if database.DBConn.Where("id = ? AND token = ?", req.ID, req.Token).First(&token).Error != nil {
+		return integration.FailedRequest(c, "invalid.token", nil)
 	}
 
 	if token.Activated {
-		return integration.InvalidRequest(c)
+		return integration.FailedRequest(c, "already.active", nil)
 	}
 
 	// Activate token
@@ -64,6 +67,7 @@ func activate(c *fiber.Ctx) error {
 	var members []returnableMember
 	for _, token := range tokens {
 		members = append(members, returnableMember{
+			ID:   token.ID,
 			Rank: token.Rank,
 			Data: token.Data,
 		})
@@ -77,6 +81,7 @@ func activate(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
 		"data":    data,
+		"token":   token.Token,
 		"members": members,
 	})
 }
