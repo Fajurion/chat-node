@@ -58,3 +58,38 @@ func ValidateToken(id string, token string) (conversations.ConversationToken, er
 
 	return conversationToken, nil
 }
+
+func ValidateTokens(tokens *[]conversations.SentConversationToken) ([]conversations.ConversationToken, error) {
+
+	// Check cache
+	foundTokens := []conversations.ConversationToken{}
+
+	notFound := map[string]conversations.SentConversationToken{}
+	notFoundIds := []string{}
+	for _, token := range *tokens {
+		if value, found := conversationsCache.Get(token.ID); found {
+			if value.(conversations.ConversationToken).Token == token.Token {
+				foundTokens = append(foundTokens, value.(conversations.ConversationToken))
+			}
+			continue
+		} else {
+			notFound[token.ID] = token
+			notFoundIds = append(notFoundIds, token.ID)
+		}
+	}
+
+	// Get tokens from database
+	var conversationTokens []conversations.ConversationToken
+	if err := database.DBConn.Model(&conversations.ConversationToken{}).Where("id IN ?", notFoundIds).Find(&conversationTokens).Error; err != nil {
+		return nil, err
+	}
+
+	for _, token := range conversationTokens {
+		conversationsCache.SetWithTTL(token.ID, token, 1, ConversationTTL)
+		if token.Token == notFound[token.ID].Token {
+			foundTokens = append(foundTokens, token)
+		}
+	}
+
+	return foundTokens, nil
+}
