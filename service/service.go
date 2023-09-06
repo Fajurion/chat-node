@@ -33,7 +33,7 @@ func User(client *pipesfiber.Client) bool {
 
 	// Send current status
 	client.SendEvent(pipes.Event{
-		Name: "setup_st", // :n = new
+		Name: "setup_st",
 		Data: map[string]interface{}{
 			"data": status.Data,
 			"node": status.Node,
