@@ -21,48 +21,15 @@ func subscribe(message wshandler.Message) {
 		return
 	}
 
-	tokensUnparsed := message.Data["tokens"].([]interface{})
-	tokens := make([]conversations.SentConversationToken, len(tokensUnparsed))
-	for i, token := range tokensUnparsed {
-		unparsed := token.(map[string]interface{})
-		tokens[i] = conversations.SentConversationToken{
-			ID:    unparsed["id"].(string),
-			Token: unparsed["token"].(string),
-		}
-	}
-
-	if len(tokens) > 500 {
-		wshandler.ErrorResponse(message, "invalid")
+	conversationTokens, tokenIds, members, ok := PrepareConversationTokens(message)
+	if !ok {
 		return
-	}
-
-	conversationTokens, err := caching.ValidateTokens(&tokens)
-	if err != nil {
-		wshandler.ErrorResponse(message, "server.error")
-		return
-	}
-
-	tokenIds := make([]string, len(conversationTokens))
-	conversationIds := make([]string, len(conversationTokens))
-	for i, token := range conversationTokens {
-		tokenIds[i] = token.Token
-		conversationIds[i] = token.Conversation
 	}
 
 	// Update all node IDs
 	if database.DBConn.Model(&conversations.ConversationToken{}).Where("id IN ?", tokenIds).Update("node", util.NodeTo64(pipes.CurrentNode.ID)).Error != nil {
 		wshandler.ErrorResponse(message, "server.error")
 		return
-	}
-
-	members, err := caching.LoadMembersArray(conversationIds)
-	if err != nil {
-		wshandler.ErrorResponse(message, "server.error")
-		return
-	}
-
-	for id, token := range members {
-		log.Printf("%s %d", id, len(token))
 	}
 
 	statusMessage := message.Data["status"].(string)
@@ -103,4 +70,47 @@ func subscribe(message wshandler.Message) {
 	}
 
 	wshandler.SuccessResponse(message)
+}
+
+func PrepareConversationTokens(message wshandler.Message) ([]conversations.ConversationToken, []string, map[string][]caching.StoredMember, bool) {
+
+	tokensUnparsed := message.Data["tokens"].([]interface{})
+	tokens := make([]conversations.SentConversationToken, len(tokensUnparsed))
+	for i, token := range tokensUnparsed {
+		unparsed := token.(map[string]interface{})
+		tokens[i] = conversations.SentConversationToken{
+			ID:    unparsed["id"].(string),
+			Token: unparsed["token"].(string),
+		}
+	}
+
+	if len(tokens) > 500 {
+		wshandler.ErrorResponse(message, "invalid")
+		return nil, nil, nil, false
+	}
+
+	conversationTokens, err := caching.ValidateTokens(&tokens)
+	if err != nil {
+		wshandler.ErrorResponse(message, "server.error")
+		return nil, nil, nil, false
+	}
+
+	tokenIds := make([]string, len(conversationTokens))
+	conversationIds := make([]string, len(conversationTokens))
+	for i, token := range conversationTokens {
+		tokenIds[i] = token.Token
+		conversationIds[i] = token.Conversation
+	}
+
+	members, err := caching.LoadMembersArray(conversationIds)
+	if err != nil {
+		wshandler.ErrorResponse(message, "server.error")
+		return nil, nil, nil, false
+	}
+
+	for id, token := range members {
+		log.Printf("%s %d", id, len(token))
+	}
+
+	return conversationTokens, tokenIds, members, true
 }
