@@ -16,7 +16,7 @@ type Message struct {
 	Creation     int64  `json:"creation" gorm:"autoUpdateTime:milli"` // Unix timestamp (ms)
 	Data         string `json:"data" gorm:"not null"`                 // Encrypted data
 	Edited       bool   `json:"edited" gorm:"not null"`               // Edited flag
-	Sender       string `json:"sender" gorm:"not null"`               // Sender ID
+	Sender       string `json:"sender" gorm:"not null"`               // Sender ID (of conversation token)
 }
 
 func CheckSize(message string) bool {

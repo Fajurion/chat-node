@@ -3,6 +3,7 @@ package caching
 import (
 	"chat-node/database"
 	"chat-node/database/conversations"
+	"chat-node/util"
 	"time"
 
 	"github.com/dgraph-io/ristretto"
@@ -27,7 +28,7 @@ func setupMembersCache() {
 }
 
 type StoredMember struct {
-	Token string
+	Token string // Conversation token (not ID of the token)
 	Node  int64
 }
 
@@ -87,4 +88,17 @@ func LoadMembersArray(ids []string) (map[string][]StoredMember, error) {
 	}
 
 	return returnMap, nil
+}
+
+func MembersToPipes(members []StoredMember) ([]string, []string) {
+
+	memberAdapters := make([]string, len(members))
+	memberNodes := make([]string, len(members))
+
+	for i, member := range members {
+		memberAdapters[i] = "s-" + member.Token
+		memberNodes[i] = util.Node64(member.Node)
+	}
+
+	return memberAdapters, memberNodes
 }
