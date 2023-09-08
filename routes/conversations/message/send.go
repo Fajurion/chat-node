@@ -5,6 +5,7 @@ import (
 	"chat-node/database/conversations"
 	"chat-node/util"
 	"log"
+	"time"
 
 	integration "fajurion.com/node-integration"
 	"github.com/Fajurion/pipes"
@@ -75,6 +76,7 @@ func sendMessage(c *fiber.Ctx) error {
 		Certificate:  certificate,
 		Data:         req.Data,
 		Sender:       req.TokenID,
+		Creation:     time.Now().UnixMilli(),
 		Edited:       false,
 	}
 
@@ -87,11 +89,15 @@ func sendMessage(c *fiber.Ctx) error {
 
 	adapters, nodes := caching.MembersToPipes(members)
 
+	log.Println(adapters)
+	log.Println(nodes)
+
 	event := pipes.Event{
 		Sender: send.SenderSystem,
 		Name:   "conv_msg",
 		Data: map[string]interface{}{
-			"message": message,
+			"conv": req.Conversation,
+			"msg":  message,
 		},
 	}
 

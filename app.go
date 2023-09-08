@@ -55,7 +55,6 @@ func main() {
 	pipes.SetupSocketless(domain + "/adoption/socketless")
 
 	app.Use(logger.New())
-
 	app.Route("/", routes.Setup)
 
 	// Connect to livekit

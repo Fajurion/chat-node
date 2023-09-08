@@ -98,7 +98,7 @@ func PrepareConversationTokens(message wshandler.Message) ([]conversations.Conve
 	tokenIds := make([]string, len(conversationTokens))
 	conversationIds := make([]string, len(conversationTokens))
 	for i, token := range conversationTokens {
-		tokenIds[i] = token.Token
+		tokenIds[i] = token.ID
 		conversationIds[i] = token.Conversation
 	}
 
