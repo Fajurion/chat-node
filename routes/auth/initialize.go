@@ -8,7 +8,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+const SenderUser = 0
+const SenderNode = 1
+
 type intializeRequest struct {
+	Sender    uint   `json:"sender"`
 	Account   string `json:"account"`
 	Session   string `json:"session"`
 	NodeToken string `json:"node_token"`
@@ -20,6 +24,10 @@ func initializeConnection(c *fiber.Ctx) error {
 	// Parse the request
 	var req intializeRequest
 	if err := c.BodyParser(&req); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	if req.Sender == SenderNode {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
