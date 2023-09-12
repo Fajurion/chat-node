@@ -21,9 +21,9 @@ func setupConversationsCache() {
 
 	// TODO: Check if values really are enough
 	conversationsCache, err = ristretto.NewCache(&ristretto.Config{
-		NumCounters: 1e6, // number of objects expected (1,000,000).
-		MaxCost:     1e6, // maximum cost of cache (1,000,000).
-		BufferItems: 64,  // something from the docs
+		NumCounters: 1e7,     // number of objects expected (1,000,000).
+		MaxCost:     1 << 30, // maximum cost of cache (1,000,000).
+		BufferItems: 64,      // something from the docs
 	})
 	if err != nil {
 		panic(err)
