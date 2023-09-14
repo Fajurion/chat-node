@@ -9,6 +9,7 @@ import (
 	"github.com/dgraph-io/ristretto"
 )
 
+// TODO: Move this into a shared redis instance
 // ! Always use cost 1
 var spacesCache *ristretto.Cache // Account ID -> Space Info
 var spaceApp uint
@@ -34,14 +35,55 @@ func setupCallsCache() {
 }
 
 type SpaceInfo struct {
-	Account   string
-	Connected bool
-	Data      string // Encrypted data
+	Account      string
+	ConnectionID string
+	Domain       string
+}
+
+// Check if account is in a space
+func IsInSpace(accId string) bool {
+	_, ok := spacesCache.Get(accId)
+	return ok
+}
+
+// Leave a space
+func LeaveSpace(accId string) bool {
+
+	obj, ok := spacesCache.Get(accId)
+	if !ok {
+		return false
+	}
+	space := obj.(SpaceInfo)
+
+	// Disconnect from space
+	util.PostRaw(util.Protocol+space.Domain+"/leave", map[string]interface{}{
+		"conn": space.ConnectionID,
+	})
+
+	return true
 }
 
 // Join a space
-func JoinSpace(accId string, space string, data string) error {
-	return nil
+func JoinSpace(accId string, space string, cluster uint) (util.AppToken, bool) {
+
+	_, ok := spacesCache.Get(accId)
+	if ok {
+		return util.AppToken{}, false
+	}
+
+	connId := generateConnectionID()
+	token, err := util.ConnectToApp(connId, accId, spaceApp, cluster) // Use accId as roomId so it's unique
+	if err != nil {
+		log.Println("Error while connecting to Spaces:", err)
+		return util.AppToken{}, false
+	}
+	spacesCache.Set(accId, SpaceInfo{
+		Account:      accId,
+		ConnectionID: connId,
+		Domain:       token.Domain,
+	}, 1)
+
+	return token, true
 }
 
 // Create a space
@@ -58,16 +100,21 @@ func CreateSpace(accId string, cluster uint) (util.AppToken, bool) {
 	}
 
 	// Get new space
-	token, err := util.ConnectToApp(accId, accId, spaceApp, cluster) // Use accId as roomId so it's unique
+	connId := generateConnectionID()
+	token, err := util.ConnectToApp(connId, accId, spaceApp, cluster) // Use accId as roomId so it's unique
 	if err != nil {
 		log.Println("Error while connecting to Spaces:", err)
 		return util.AppToken{}, false
 	}
 	spacesCache.Set(accId, SpaceInfo{
-		Account:   accId,
-		Connected: false,
-		Data:      "",
+		Account:      accId,
+		ConnectionID: connId,
+		Domain:       token.Domain,
 	}, 1)
 
 	return token, true
+}
+
+func generateConnectionID() string {
+	return "sn-" + util.GenerateToken(16)
 }

@@ -2,6 +2,7 @@ package message_routes
 
 import (
 	"chat-node/caching"
+	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/util"
 	"log"
@@ -80,12 +81,9 @@ func sendMessage(c *fiber.Ctx) error {
 		Edited:       false,
 	}
 
-	// Messages aren't stored for now
-	/*
-		if err := database.DBConn.Create(&message).Error; err != nil {
-			return integration.FailedRequest(c, "server.error", err)
-		}
-	*/
+	if err := database.DBConn.Create(&message).Error; err != nil {
+		return integration.FailedRequest(c, "server.error", err)
+	}
 
 	adapters, nodes := caching.MembersToPipes(members)
 
