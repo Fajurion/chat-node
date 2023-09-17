@@ -7,7 +7,7 @@ import (
 	"github.com/Fajurion/pipesfiber/wshandler"
 )
 
-// Action: cll_start
+// Action: spc_start
 func start(message wshandler.Message) {
 
 	if caching.IsInSpace(message.Client.ID) {

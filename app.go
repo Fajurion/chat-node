@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chat-node/caching"
 	"chat-node/calls"
 	"chat-node/database"
 	"chat-node/handler"
@@ -34,6 +35,7 @@ func main() {
 
 	// Connect to the database
 	database.Connect()
+	caching.SetupCaches()
 
 	// Create fiber app
 	app := fiber.New(fiber.Config{

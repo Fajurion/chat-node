@@ -13,6 +13,7 @@ import (
 
 	integration "fajurion.com/node-integration"
 	"github.com/Fajurion/pipes"
+	"github.com/Fajurion/pipes/adapter"
 	"github.com/Fajurion/pipesfiber"
 	pipesfroutes "github.com/Fajurion/pipesfiber/routes"
 	jwtware "github.com/gofiber/contrib/jwt"
@@ -64,6 +65,7 @@ func Setup(router fiber.Router) {
 }
 
 func setupPipesFiber(router fiber.Router) {
+	adapter.SetupCaching()
 	pipesfiber.Setup(pipesfiber.Config{
 		ExpectedConnections: 10_0_0_0,       // 10 thousand, but funny
 		SessionDuration:     time.Hour * 24, // This is kinda important

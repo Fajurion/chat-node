@@ -7,7 +7,7 @@ import (
 	"github.com/Fajurion/pipesfiber/wshandler"
 )
 
-// Action: cll_join
+// Action: spc_join
 func joinCall(message wshandler.Message) {
 
 	if message.ValidateForm("id") {

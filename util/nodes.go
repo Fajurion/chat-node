@@ -7,9 +7,9 @@ import (
 )
 
 type AppToken struct {
-	Node   uint // Node ID
-	Domain string
-	Token  string
+	Node   uint   `json:"node"` // Node ID
+	Domain string `json:"domain"`
+	Token  string `json:"token"`
 }
 
 func ConnectToApp(account string, session string, app uint, cluster uint) (AppToken, error) {
