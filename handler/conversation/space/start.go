@@ -10,13 +10,16 @@ import (
 // Action: spc_start
 func start(message wshandler.Message) {
 
-	if caching.IsInSpace(message.Client.ID) {
-		wshandler.ErrorResponse(message, "already.in.space")
-		return
-	}
+	/*
+		TODO: Re-enable
+		if caching.IsInSpace(message.Client.ID) {
+			wshandler.ErrorResponse(message, "already.in.space")
+			return
+		}
+	*/
 
 	// Create space
-	appToken, valid := caching.CreateSpace(message.Client.ID, integration.ClusterID)
+	roomId, appToken, valid := caching.CreateSpace(message.Client.ID, integration.ClusterID)
 	if !valid {
 		wshandler.ErrorResponse(message, "server.error")
 		return
@@ -25,6 +28,7 @@ func start(message wshandler.Message) {
 	// Send space info
 	wshandler.NormalResponse(message, map[string]interface{}{
 		"success": true,
+		"id":      roomId,
 		"token":   appToken,
 	})
 }

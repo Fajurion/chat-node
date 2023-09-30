@@ -56,9 +56,20 @@ func LeaveSpace(accId string) bool {
 	space := obj.(SpaceInfo)
 
 	// Disconnect from space
-	util.PostRaw(util.Protocol+space.Domain+"/leave", map[string]interface{}{
+	body, err := util.PostRaw(util.Protocol+space.Domain+"/leave", map[string]interface{}{
 		"conn": space.ConnectionID,
 	})
+	if err != nil {
+		log.Println("Error while leaving space:", err)
+		return false
+	}
+	if !body["success"].(bool) {
+		log.Println("Error while leaving space:", body["error"])
+		return false
+	}
+
+	// Actually leave the space (this took 10 minutes to add because I'm stupid)
+	spacesCache.Del(accId)
 
 	return true
 }
@@ -72,7 +83,7 @@ func JoinSpace(accId string, space string, cluster uint) (util.AppToken, bool) {
 	}
 
 	connId := generateConnectionID()
-	token, err := util.ConnectToApp(connId, accId, spaceApp, cluster) // Use accId as roomId so it's unique
+	token, err := util.ConnectToApp(connId, space, spaceApp, cluster) // Use accId as roomId so it's unique
 	if err != nil {
 		log.Println("Error while connecting to Spaces:", err)
 		return util.AppToken{}, false
@@ -87,24 +98,27 @@ func JoinSpace(accId string, space string, cluster uint) (util.AppToken, bool) {
 }
 
 // Create a space
-func CreateSpace(accId string, cluster uint) (util.AppToken, bool) {
+func CreateSpace(accId string, cluster uint) (string, util.AppToken, bool) {
 
-	_, ok := spacesCache.Get(accId)
-	if ok {
-		return util.AppToken{}, false
-	}
+	/*
+		_, ok := spacesCache.Get(accId)
+		if ok {
+			return "", util.AppToken{}, false
+		}
+	*/
 
 	if os.Getenv("SPACES_APP") == "" {
 		log.Println("Spaces is currently disabled. Please set SPACES_APP in your .env file to enable it.")
-		return util.AppToken{}, false
+		return "", util.AppToken{}, false
 	}
 
 	// Get new space
 	connId := generateConnectionID()
-	token, err := util.ConnectToApp(connId, accId, spaceApp, cluster) // Use accId as roomId so it's unique
+	roomId := util.GenerateToken(16)
+	token, err := util.ConnectToApp(connId, roomId, spaceApp, cluster) // Use accId as roomId so it's unique
 	if err != nil {
 		log.Println("Error while connecting to Spaces:", err)
-		return util.AppToken{}, false
+		return "", util.AppToken{}, false
 	}
 	spacesCache.Set(accId, SpaceInfo{
 		Account:      accId,
@@ -112,7 +126,7 @@ func CreateSpace(accId string, cluster uint) (util.AppToken, bool) {
 		Domain:       token.Domain,
 	}, 1)
 
-	return token, true
+	return roomId, token, true
 }
 
 func generateConnectionID() string {
