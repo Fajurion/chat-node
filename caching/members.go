@@ -28,16 +28,37 @@ func setupMembersCache() {
 }
 
 type StoredMember struct {
-	Token string // Conversation token (not ID of the token)
-	Node  int64
+	TokenID string // Conversation token ID
+	Token   string // Conversation token
+	Node    int64
 }
+
+const actionRelearnToken = "reget"
 
 // Does database requests and stuff
 func LoadMembers(id string) ([]StoredMember, error) {
 
 	// Check cache
 	if value, found := membersCache.Get(id); found {
-		return value.([]StoredMember), nil
+		members := value.([]StoredMember)
+		changes := false
+		for i, member := range members {
+			if member.Token == actionRelearnToken {
+				var token string
+				if err := database.DBConn.Model(&conversations.ConversationToken{}).Select("token").Where("conversation = ?", id).Take(&token).Error; err != nil {
+					return []StoredMember{}, err
+				}
+				member.Token = token
+				members[i] = member
+				changes = true
+			}
+		}
+
+		if changes {
+			membersCache.SetWithTTL(id, members, 1, MemberTTL)
+		}
+
+		return members, nil
 	}
 
 	var members []conversations.ConversationToken
@@ -47,9 +68,18 @@ func LoadMembers(id string) ([]StoredMember, error) {
 
 	storedMembers := make([]StoredMember, len(members))
 	for i, member := range members {
-		storedMembers[i] = StoredMember{
-			Token: member.Token,
-			Node:  member.Node,
+		if !member.Activated {
+			storedMembers[i] = StoredMember{
+				TokenID: member.ID,
+				Token:   actionRelearnToken,
+				Node:    member.Node,
+			}
+		} else {
+			storedMembers[i] = StoredMember{
+				TokenID: member.ID,
+				Token:   member.Token,
+				Node:    member.Node,
+			}
 		}
 	}
 
@@ -78,10 +108,19 @@ func LoadMembersArray(ids []string) (map[string][]StoredMember, error) {
 		return nil, err
 	}
 	for _, token := range tokens {
-		returnMap[token.Conversation] = append(returnMap[token.Conversation], StoredMember{
-			Token: token.Token,
-			Node:  token.Node,
-		})
+		if !token.Activated {
+			returnMap[token.Conversation] = append(returnMap[token.Conversation], StoredMember{
+				TokenID: token.ID,
+				Token:   actionRelearnToken,
+				Node:    token.Node,
+			})
+		} else {
+			returnMap[token.Conversation] = append(returnMap[token.Conversation], StoredMember{
+				TokenID: token.ID,
+				Token:   token.Token,
+				Node:    token.Node,
+			})
+		}
 	}
 	for key, memberTokens := range returnMap {
 		membersCache.SetWithTTL(key, memberTokens, 1, MemberTTL)
