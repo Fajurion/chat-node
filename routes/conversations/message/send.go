@@ -30,12 +30,12 @@ func sendMessage(c *fiber.Ctx) error {
 
 	var req MessageSendRequest
 	if err := c.BodyParser(&req); err != nil {
-		return integration.InvalidRequest(c)
+		return integration.InvalidRequest(c, err.Error())
 	}
 
 	// Validate request
 	if !req.Validate() {
-		return integration.InvalidRequest(c)
+		return integration.InvalidRequest(c, "request is invalid")
 	}
 
 	if conversations.CheckSize(req.Data) {
@@ -45,7 +45,7 @@ func sendMessage(c *fiber.Ctx) error {
 	// Validate conversation token
 	_, err := caching.ValidateToken(req.TokenID, req.Token)
 	if err != nil {
-		return integration.InvalidRequest(c)
+		return integration.InvalidRequest(c, "token id is invalid")
 	}
 
 	// Load members
@@ -62,7 +62,7 @@ func sendMessage(c *fiber.Ctx) error {
 	}
 
 	if !found {
-		return integration.InvalidRequest(c)
+		return integration.InvalidRequest(c, "member token wasn't found")
 	}
 
 	messageId := util.GenerateToken(32)

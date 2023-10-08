@@ -89,8 +89,8 @@ func main() {
 		return true
 	})
 
+	pipes.DebugLogs = true // TODO: Replace in production
 	if integration.Testing {
-		pipes.DebugLogs = true
 
 		// Start on localhost
 		app.Listen(fmt.Sprintf("localhost:%d", port))

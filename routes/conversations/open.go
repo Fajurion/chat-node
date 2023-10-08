@@ -30,12 +30,12 @@ func openConversation(c *fiber.Ctx) error {
 
 	var req OpenConversationRequest
 	if err := c.BodyParser(&req); err != nil {
-		return integration.InvalidRequest(c)
+		return integration.InvalidRequest(c, err.Error())
 	}
 
 	// Validate request
 	if !req.Validate() {
-		return integration.InvalidRequest(c)
+		return integration.InvalidRequest(c, "request is invalid")
 	}
 
 	if len(req.Members)+1 > util.MaxConversationMembers {

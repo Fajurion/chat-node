@@ -14,3 +14,7 @@ tmp/
 pipes/
 pipes/*
 .env
+
+# build stuff
+app
+app.exe

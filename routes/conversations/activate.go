@@ -31,13 +31,13 @@ func activate(c *fiber.Ctx) error {
 
 	var req ActivateConversationRequest
 	if err := c.BodyParser(&req); err != nil {
-		return integration.InvalidRequest(c)
+		return integration.InvalidRequest(c, err.Error())
 	}
 
 	// Validate request
 	if !req.Validate() {
 		log.Println(len(req.Token))
-		return integration.InvalidRequest(c)
+		return integration.InvalidRequest(c, "request is invalid")
 	}
 
 	// Activate conversation

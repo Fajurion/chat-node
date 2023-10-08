@@ -20,12 +20,12 @@ func setStatus(c *fiber.Ctx) error {
 	// Parse request
 	var req StatusSetRequest
 	if err := c.BodyParser(&req); err != nil {
-		return integration.InvalidRequest(c)
+		return integration.InvalidRequest(c, err.Error())
 	}
 
 	// Validate request
 	if !req.Validate() {
-		return integration.InvalidRequest(c)
+		return integration.InvalidRequest(c, "request is invalid")
 	}
 
 	return nil

@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	integration "fajurion.com/node-integration"
 	"github.com/bytedance/sonic"
 )
 
@@ -43,10 +44,9 @@ func GenerateToken(tkLength int32) string {
 }
 
 var Protocol = "http://"
-var BasePath = "http://localhost:3000"
 
 func PostRequest(url string, body map[string]interface{}) (map[string]interface{}, error) {
-	return PostRaw(BasePath+url, body)
+	return PostRaw(integration.BasePath+url, body)
 }
 
 func PostRaw(url string, body map[string]interface{}) (map[string]interface{}, error) {
@@ -87,7 +87,7 @@ type NormalResponse struct {
 }
 
 func PostBytes(url string, body map[string]interface{}) (string, error) {
-	return PostBytesRaw(BasePath+url, body)
+	return PostBytesRaw(integration.BasePath+url, body)
 }
 
 func PostBytesRaw(url string, body map[string]interface{}) (string, error) {
