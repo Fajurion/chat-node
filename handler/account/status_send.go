@@ -51,7 +51,6 @@ func sendStatus(message wshandler.Message) {
 		// Send the subscription event
 		send.Pipe(send.ProtocolWS, pipes.Message{
 			Channel: pipes.Conversation(memberIds, memberNodes),
-			NoSelf:  true,
 			Event: pipes.Event{
 				Name: "acc_st",
 				Data: map[string]interface{}{

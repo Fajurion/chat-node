@@ -70,8 +70,7 @@ func createMessage(message wshandler.Message) {
 	}
 
 	var event = pipes.Event{
-		Sender: "0", // System, to prevent sending to the client twice
-		Name:   "conv_msg",
+		Name: "conv_msg",
 		Data: map[string]interface{}{
 			"message": store,
 		},

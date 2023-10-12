@@ -91,8 +91,7 @@ func sendMessage(c *fiber.Ctx) error {
 	log.Println(nodes)
 
 	event := pipes.Event{
-		Sender: send.SenderSystem,
-		Name:   "conv_msg",
+		Name: "conv_msg",
 		Data: map[string]interface{}{
 			"conv": req.Conversation,
 			"msg":  message,

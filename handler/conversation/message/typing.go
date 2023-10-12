@@ -30,8 +30,7 @@ func typingStatus(message wshandler.Message) {
 	send.Pipe(send.ProtocolWS, pipes.Message{
 		Channel: pipes.Conversation(members, nodes),
 		Event: pipes.Event{
-			Name:   message.Action,
-			Sender: message.Client.ID,
+			Name: message.Action,
 			Data: map[string]interface{}{
 				"id": id,
 			},

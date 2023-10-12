@@ -83,8 +83,7 @@ func updateMessage(message wshandler.Message) {
 	send.Pipe(send.ProtocolWS, pipes.Message{
 		Channel: pipes.Conversation(members, nodes),
 		Event: pipes.Event{
-			Sender: message.Client.ID,
-			Name:   "conv_msg",
+			Name: "conv_msg",
 			Data: map[string]interface{}{
 				"id":           id,
 				"conversation": conversation.ID,
