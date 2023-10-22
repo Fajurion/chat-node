@@ -16,11 +16,12 @@ import (
 // Action: conv_sub
 func subscribe(message wshandler.Message) {
 
-	if message.ValidateForm("tokens", "status") {
+	if message.ValidateForm("tokens", "status", "date") {
 		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
+	date := int64(message.Data["date"].(float64))
 	conversationTokens, tokenIds, members, ok := PrepareConversationTokens(message)
 	if !ok {
 		return
@@ -66,6 +67,8 @@ func subscribe(message wshandler.Message) {
 				},
 			},
 		})
+
+		AddConversationToken(TokenTask{token.ID, token.Token, date})
 	}
 
 	wshandler.SuccessResponse(message)
