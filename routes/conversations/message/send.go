@@ -90,13 +90,7 @@ func sendMessage(c *fiber.Ctx) error {
 	log.Println(adapters)
 	log.Println(nodes)
 
-	event := pipes.Event{
-		Name: "conv_msg",
-		Data: map[string]interface{}{
-			"conv": req.Conversation,
-			"msg":  message,
-		},
-	}
+	event := MessageEvent(message)
 
 	log.Println("sending message..")
 
@@ -109,4 +103,14 @@ func sendMessage(c *fiber.Ctx) error {
 		"success": true,
 		"message": message,
 	})
+}
+
+func MessageEvent(message conversations.Message) pipes.Event {
+	return pipes.Event{
+		Name: "conv_msg",
+		Data: map[string]interface{}{
+			"conv": message.Conversation,
+			"msg":  message,
+		},
+	}
 }

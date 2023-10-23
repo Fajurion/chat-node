@@ -68,7 +68,7 @@ func subscribe(message wshandler.Message) {
 			},
 		})
 
-		AddConversationToken(TokenTask{token.ID, token.Token, date})
+		AddConversationToken(TokenTask{"s-" + token.Token, token.Conversation, date})
 	}
 
 	wshandler.SuccessResponse(message)
