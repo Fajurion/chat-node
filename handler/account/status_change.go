@@ -9,6 +9,7 @@ import (
 	"github.com/Fajurion/pipesfiber/wshandler"
 )
 
+// Action: st_ch
 func changeStatus(message wshandler.Message) {
 
 	if !message.ValidateForm("status") {

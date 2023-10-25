@@ -5,6 +5,7 @@ import (
 	"chat-node/database/conversations"
 	"chat-node/handler/conversation/space"
 	message_routes "chat-node/routes/conversations/message"
+	"time"
 
 	"github.com/Fajurion/pipes/send"
 	"github.com/Fajurion/pipesfiber/wshandler"
@@ -46,6 +47,7 @@ func setupMessageQueue() {
 				// Send messages to the adapter
 				for _, message := range messages {
 					send.Client(task.Adapter, message_routes.MessageEvent(message))
+					time.Sleep(3 * time.Millisecond) // Give TCP some time to send the message
 				}
 			}
 		}()
