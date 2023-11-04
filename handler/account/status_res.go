@@ -11,7 +11,7 @@ import (
 // Action: st_res
 func respondToStatus(message wshandler.Message) {
 
-	if message.ValidateForm("id", "token", "status") {
+	if message.ValidateForm("id", "token", "status", "data") {
 		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
@@ -19,6 +19,7 @@ func respondToStatus(message wshandler.Message) {
 	id := message.Data["id"].(string)
 	token := message.Data["token"].(string)
 	status := message.Data["status"].(string)
+	data := message.Data["data"].(string)
 
 	// Get from cache
 	convToken, err := caching.ValidateToken(id, token)
@@ -39,7 +40,7 @@ func respondToStatus(message wshandler.Message) {
 	// Send the subscription event
 	err = send.Pipe(send.ProtocolWS, pipes.Message{
 		Channel: pipes.Conversation(ids, nodes),
-		Event:   statusEvent(status, ":a"),
+		Event:   statusEvent(status, data, ":a"),
 	})
 	if err != nil {
 		wshandler.ErrorResponse(message, "server.error")
