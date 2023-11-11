@@ -56,13 +56,13 @@ func sendMessage(c *fiber.Ctx) error {
 
 	found := false
 	for _, member := range members {
-		if member.Token == req.Token {
+		if member.TokenID == req.TokenID {
 			found = true
 		}
 	}
 
 	if !found {
-		return integration.InvalidRequest(c, "member token wasn't found")
+		return integration.InvalidRequest(c, "member token wasn't found "+req.Token+" "+req.Conversation)
 	}
 
 	messageId := util.GenerateToken(32)
