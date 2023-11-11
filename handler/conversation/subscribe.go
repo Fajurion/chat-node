@@ -64,6 +64,7 @@ func subscribe(message wshandler.Message) {
 				Name: "acc_st",
 				Data: map[string]interface{}{
 					"st": statusMessage,
+					"d":  "",
 				},
 			},
 		})
