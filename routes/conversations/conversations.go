@@ -8,6 +8,7 @@ import (
 
 func SetupRoutes(router fiber.Router) {
 	router.Post("/open", openConversation)
+	router.Post("/read", read)
 	router.Post("/activate", activate)
 
 	router.Route("/message", message_routes.SetupRoutes)

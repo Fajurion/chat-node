@@ -93,3 +93,11 @@ func ValidateTokens(tokens *[]conversations.SentConversationToken) ([]conversati
 
 	return foundTokens, nil
 }
+
+func UpdateToken(token conversations.ConversationToken) error {
+
+	// Update cache
+	conversationsCache.SetWithTTL(token.ID, token, 1, ConversationTTL)
+
+	return nil
+}

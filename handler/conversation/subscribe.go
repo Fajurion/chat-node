@@ -34,6 +34,7 @@ func subscribe(message wshandler.Message) {
 	}
 
 	statusMessage := message.Data["status"].(string)
+	readDates := make(map[string]int64, len(conversationTokens))
 	for _, token := range conversationTokens {
 
 		// Register adapter for the subscription
@@ -69,10 +70,14 @@ func subscribe(message wshandler.Message) {
 			},
 		})
 
+		readDates[token.Conversation] = date
 		AddConversationToken(TokenTask{"s-" + token.Token, token.Conversation, date})
 	}
 
-	wshandler.SuccessResponse(message)
+	wshandler.NormalResponse(message, map[string]interface{}{
+		"success": true,
+		"read":    readDates,
+	})
 }
 
 func PrepareConversationTokens(message wshandler.Message) ([]conversations.ConversationToken, []string, map[string][]caching.StoredMember, bool) {
