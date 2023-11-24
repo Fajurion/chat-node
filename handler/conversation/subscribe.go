@@ -70,7 +70,7 @@ func subscribe(message wshandler.Message) {
 			},
 		})
 
-		readDates[token.Conversation] = date
+		readDates[token.Conversation] = token.LastRead
 		AddConversationToken(TokenTask{"s-" + token.Token, token.Conversation, date})
 	}
 

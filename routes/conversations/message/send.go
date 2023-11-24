@@ -43,7 +43,7 @@ func sendMessage(c *fiber.Ctx) error {
 	}
 
 	// Validate conversation token
-	_, err := caching.ValidateToken(req.TokenID, req.Token)
+	token, err := caching.ValidateToken(req.TokenID, req.Token)
 	if err != nil {
 		return integration.InvalidRequest(c, "token id is invalid")
 	}
@@ -84,6 +84,13 @@ func sendMessage(c *fiber.Ctx) error {
 	if err := database.DBConn.Create(&message).Error; err != nil {
 		return integration.FailedRequest(c, "server.error", err)
 	}
+
+	if err := database.DBConn.Model(&conversations.ConversationToken{}).Where("conversation = ? AND id = ?", req.Conversation, req.TokenID).Update("last_read", time.Now().UnixMilli()+1).Error; err != nil {
+		return integration.FailedRequest(c, "server.error", err)
+	}
+	log.Println("updated last read to", time.Now().UnixMilli()+1)
+	token.LastRead = time.Now().UnixMilli() + 1
+	caching.UpdateToken(token)
 
 	adapters, nodes := caching.MembersToPipes(members)
 
