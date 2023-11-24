@@ -94,6 +94,25 @@ func ValidateTokens(tokens *[]conversations.SentConversationToken) ([]conversati
 	return foundTokens, nil
 }
 
+// Get a conversation token
+func GetToken(id string) (conversations.ConversationToken, error) {
+
+	// Check cache
+	if value, found := conversationsCache.Get(id); found {
+		return value.(conversations.ConversationToken), nil
+	}
+
+	var conversationToken conversations.ConversationToken
+	if err := database.DBConn.Where("id = ?", id).Take(&conversationToken).Error; err != nil {
+		return conversations.ConversationToken{}, err
+	}
+
+	// Add to cache
+	conversationsCache.SetWithTTL(id, conversationToken, 1, ConversationTTL)
+
+	return conversationToken, nil
+}
+
 func UpdateToken(token conversations.ConversationToken) error {
 
 	// Update cache
