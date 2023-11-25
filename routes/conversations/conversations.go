@@ -12,6 +12,7 @@ func SetupRoutes(router fiber.Router) {
 	router.Post("/activate", activate)
 	router.Post("/demote_token", demoteToken)
 	router.Post("/promote_token", promoteToken)
+	router.Post("/tokens", listTokens)
 
 	router.Route("/message", message_routes.SetupRoutes)
 }
