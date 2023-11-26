@@ -59,7 +59,7 @@ func openConversation(c *fiber.Ctx) error {
 	}
 
 	if err := database.DBConn.Create(&conv).Error; err != nil {
-		return integration.FailedRequest(c, "database.error", nil)
+		return integration.FailedRequest(c, "server.error", nil)
 	}
 
 	// Create tokens
