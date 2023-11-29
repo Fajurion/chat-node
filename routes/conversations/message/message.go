@@ -20,7 +20,7 @@ func SetupRoutes(router fiber.Router) {
 	router.Post("/send_system", sendSystem)
 }
 
-func SendSystemMessage(conversation string, content string, attachments string) error {
+func SendSystemMessage(conversation string, content string, attachments []string) error {
 
 	contentJson, err := sonic.MarshalString(map[string]interface{}{
 		"c": content,

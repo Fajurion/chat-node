@@ -29,6 +29,16 @@ func generateToken(c *fiber.Ctx) error {
 		return requests.InvalidRequest(c)
 	}
 
+	// Check if conversation is group
+	var conversation conversations.Conversation
+	if database.DBConn.Where("id = ?", token.Conversation).Find(&conversation).Error != nil {
+		return requests.InvalidRequest(c)
+	}
+
+	if conversation.Type != conversations.TypeGroup {
+		return requests.FailedRequest(c, "no.group", nil)
+	}
+
 	// Check requirements for a new token
 	members, err := caching.LoadMembers(token.Conversation)
 	if err != nil {

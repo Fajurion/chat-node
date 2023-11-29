@@ -73,14 +73,15 @@ func activate(c *fiber.Ctx) error {
 		})
 	}
 
-	var data string
-	if err := database.DBConn.Select("data").Model(&conversations.Conversation{}).Where("id = ?", token.Conversation).Take(&data).Error; err != nil {
+	var conversation conversations.Conversation
+	if err := database.DBConn.Where("id = ?", token.Conversation).Take(&conversation).Error; err != nil {
 		return integration.FailedRequest(c, "server.error", err)
 	}
 
 	return c.JSON(fiber.Map{
 		"success": true,
-		"data":    data,
+		"type":    conversation.Type,
+		"data":    conversation.Data,
 		"token":   token.Token,
 		"members": members,
 	})

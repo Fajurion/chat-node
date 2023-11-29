@@ -53,8 +53,13 @@ func openConversation(c *fiber.Ctx) error {
 	}
 
 	// Create conversation
+	convType := conversations.TypePrivateMessage
+	if len(req.Members) > 1 {
+		convType = conversations.TypeGroup
+	}
 	conv := conversations.Conversation{
 		ID:   util.GenerateToken(util.ConversationIDLength),
+		Type: uint(convType),
 		Data: req.Data,
 	}
 
@@ -105,6 +110,7 @@ func openConversation(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success":      true,
 		"conversation": conv.ID,
+		"type":         conv.Type,
 		"admin_token": returnableToken{
 			ID:    adminToken.ID,
 			Token: adminToken.Token,

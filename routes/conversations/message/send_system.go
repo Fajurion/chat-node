@@ -17,7 +17,7 @@ func sendSystem(c *fiber.Ctx) error {
 		return requests.InvalidRequest(c)
 	}
 
-	err := SendSystemMessage(req.Conversation, "hello.world", "attachment")
+	err := SendSystemMessage(req.Conversation, "group.rank_change", []string{"1", "2", "DtLmwVF35oiE", "NZJNP232RS5g"})
 	if err != nil {
 		return requests.InvalidRequest(c)
 	}
