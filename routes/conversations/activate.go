@@ -1,6 +1,7 @@
 package conversation_routes
 
 import (
+	"chat-node/caching"
 	"chat-node/database"
 	"chat-node/database/conversations"
 	message_routes "chat-node/routes/conversations/message"
@@ -59,6 +60,12 @@ func activate(c *fiber.Ctx) error {
 		return integration.FailedRequest(c, "server.error", err)
 	}
 
+	// Update token
+	err := caching.UpdateToken(token)
+	if err != nil {
+		return integration.FailedRequest(c, "server.error", err)
+	}
+
 	// Return all data
 	var tokens []conversations.ConversationToken
 	if err := database.DBConn.Where(&conversations.ConversationToken{Conversation: token.Conversation}).Find(&tokens).Error; err != nil {
@@ -79,7 +86,7 @@ func activate(c *fiber.Ctx) error {
 		return integration.FailedRequest(c, "server.error", err)
 	}
 
-	err := message_routes.SendSystemMessage(token.Conversation, "group.member_join", []string{message_routes.AttachAccount(token.Data)})
+	err = message_routes.SendSystemMessage(token.Conversation, "group.member_join", []string{message_routes.AttachAccount(token.Data)})
 	if err != nil {
 		return integration.FailedRequest(c, "server.error", err)
 	}
