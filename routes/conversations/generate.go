@@ -4,9 +4,11 @@ import (
 	"chat-node/caching"
 	"chat-node/database"
 	"chat-node/database/conversations"
+	message_routes "chat-node/routes/conversations/message"
 	"chat-node/util"
 	"chat-node/util/requests"
 
+	integration "fajurion.com/node-integration"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -61,6 +63,11 @@ func generateToken(c *fiber.Ctx) error {
 
 	if database.DBConn.Create(&generated).Error != nil {
 		return requests.FailedRequest(c, "server.error", nil)
+	}
+
+	err = message_routes.SendSystemMessage(token.Conversation, "group.member_join", []string{message_routes.AttachAccount(token.Data)})
+	if err != nil {
+		return integration.FailedRequest(c, "server.error", err)
 	}
 
 	return c.JSON(fiber.Map{

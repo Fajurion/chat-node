@@ -63,7 +63,8 @@ func demoteToken(c *fiber.Ctx) error {
 		return requests.FailedRequest(c, "server.error", nil)
 	}
 
-	err = message_routes.SendSystemMessage(token.Conversation, "group.rank_change", []string{fmt.Sprintf("%d", prevRank), fmt.Sprintf("%d", userToken.Rank), userToken.ID, token.ID})
+	err = message_routes.SendSystemMessage(token.Conversation, "group.rank_change", []string{fmt.Sprintf("%d", prevRank), fmt.Sprintf("%d", userToken.Rank),
+		message_routes.AttachAccount(userToken.Data), message_routes.AttachAccount(token.Data)})
 	if err != nil {
 		return requests.FailedRequest(c, "server.error", nil)
 	}

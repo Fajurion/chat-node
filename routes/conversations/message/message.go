@@ -63,3 +63,7 @@ func SendSystemMessage(conversation string, content string, attachments []string
 
 	return nil
 }
+
+func AttachAccount(encrypted string) string {
+	return "a:" + encrypted
+}

@@ -3,6 +3,7 @@ package conversation_routes
 import (
 	"chat-node/database"
 	"chat-node/database/conversations"
+	message_routes "chat-node/routes/conversations/message"
 	"chat-node/util"
 	"log"
 
@@ -75,6 +76,11 @@ func activate(c *fiber.Ctx) error {
 
 	var conversation conversations.Conversation
 	if err := database.DBConn.Where("id = ?", token.Conversation).Take(&conversation).Error; err != nil {
+		return integration.FailedRequest(c, "server.error", err)
+	}
+
+	err := message_routes.SendSystemMessage(token.Conversation, "group.member_join", []string{message_routes.AttachAccount(token.Data)})
+	if err != nil {
 		return integration.FailedRequest(c, "server.error", err)
 	}
 
