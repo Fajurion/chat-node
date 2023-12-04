@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/Fajurion/pipes/adapter"
 	"github.com/dgraph-io/ristretto"
 )
 
@@ -119,4 +120,9 @@ func UpdateToken(token conversations.ConversationToken) error {
 	conversationsCache.SetWithTTL(token.ID, token, 1, ConversationTTL)
 
 	return nil
+}
+
+func DeleteToken(id string) {
+	adapter.RemoveWS(id)
+	conversationsCache.Del(id)
 }
