@@ -110,7 +110,7 @@ func leaveConversation(c *fiber.Ctx) error {
 		}
 	}
 
-	err = message_routes.SendSystemMessage(token.Conversation, "group.member_leave", []string{
+	message_routes.SendSystemMessage(token.Conversation, "group.member_leave", []string{
 		message_routes.AttachAccount(token.Data),
 	})
 
