@@ -95,6 +95,12 @@ func ValidateTokens(tokens *[]conversations.SentConversationToken) ([]conversati
 	return foundTokens, nil
 }
 
+// Deletes cache and does database queries again (for when caching would break something)
+func GetTokenNew(id string) (conversations.ConversationToken, error) {
+	conversationsCache.Del(id)
+	return GetToken(id)
+}
+
 // Get a conversation token
 func GetToken(id string) (conversations.ConversationToken, error) {
 

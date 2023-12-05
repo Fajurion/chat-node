@@ -5,6 +5,7 @@ import (
 	"chat-node/util/requests"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 type listMembersRequest struct {
@@ -32,7 +33,8 @@ func listTokens(c *fiber.Ctx) error {
 		return requests.InvalidRequest(c)
 	}
 
-	members, err := caching.LoadMembers(token.Conversation)
+	// We use methods without caching here because if a member leaves on a different node, the cache won't be cleared
+	members, err := caching.LoadMembersNew(token.Conversation)
 	if err != nil {
 		return requests.InvalidRequest(c)
 	}
@@ -40,8 +42,8 @@ func listTokens(c *fiber.Ctx) error {
 	realMembers := make([]returnableMemberToken, len(members))
 	for i, memberToken := range members {
 
-		member, err := caching.GetToken(memberToken.TokenID)
-		if err != nil {
+		member, err := caching.GetTokenNew(memberToken.TokenID)
+		if err != nil && err != gorm.ErrRecordNotFound {
 			return requests.FailedRequest(c, "server.error", err)
 		}
 

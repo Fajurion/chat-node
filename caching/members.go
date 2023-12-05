@@ -35,6 +35,12 @@ type StoredMember struct {
 
 const actionRelearnToken = "reget"
 
+// Always does database requests (use where caching would break stuff)
+func LoadMembersNew(id string) ([]StoredMember, error) {
+	membersCache.Del(id)
+	return LoadMembers(id)
+}
+
 // Does database requests and stuff
 func LoadMembers(id string) ([]StoredMember, error) {
 
