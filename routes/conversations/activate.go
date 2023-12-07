@@ -86,9 +86,11 @@ func activate(c *fiber.Ctx) error {
 		return integration.FailedRequest(c, "server.error", err)
 	}
 
-	err = message_routes.SendSystemMessage(token.Conversation, "group.member_join", []string{message_routes.AttachAccount(token.Data)})
-	if err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+	if conversation.Type == conversations.TypeGroup {
+		err = message_routes.SendSystemMessage(token.Conversation, "group.member_join", []string{message_routes.AttachAccount(token.Data)})
+		if err != nil {
+			return integration.FailedRequest(c, "server.error", err)
+		}
 	}
 
 	return c.JSON(fiber.Map{
