@@ -77,7 +77,6 @@ func sendMessage(c *fiber.Ctx) error {
 		Certificate:  certificate,
 		Data:         req.Data,
 		Sender:       req.TokenID,
-		Creation:     time.Now().UnixMilli(),
 		Edited:       false,
 	}
 
