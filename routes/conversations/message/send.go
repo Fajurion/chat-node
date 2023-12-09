@@ -5,7 +5,6 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/util"
-	"log"
 	"time"
 
 	integration "fajurion.com/node-integration"
@@ -18,11 +17,13 @@ type MessageSendRequest struct {
 	Conversation string `json:"conversation"`
 	TokenID      string `json:"token_id"`
 	Token        string `json:"token"`
+	Timestamp    uint64 `json:"timestamp"`
 	Data         string `json:"data"`
 }
 
 func (r *MessageSendRequest) Validate() bool {
-	return len(r.Conversation) > 0 && len(r.Data) > 0 && len(r.Token) == util.ConversationTokenLength
+	return len(r.Conversation) > 0 && len(r.Data) > 0 && len(r.Token) == util.ConversationTokenLength &&
+		uint64(time.Now().UnixMilli())-r.Timestamp < 2000
 }
 
 // Route: /conversations/message/send
@@ -77,6 +78,7 @@ func sendMessage(c *fiber.Ctx) error {
 		Certificate:  certificate,
 		Data:         req.Data,
 		Sender:       req.TokenID,
+		Creation:     int64(req.Timestamp),
 		Edited:       false,
 	}
 
@@ -87,18 +89,11 @@ func sendMessage(c *fiber.Ctx) error {
 	if err := database.DBConn.Model(&conversations.ConversationToken{}).Where("conversation = ? AND id = ?", req.Conversation, req.TokenID).Update("last_read", time.Now().UnixMilli()+1).Error; err != nil {
 		return integration.FailedRequest(c, "server.error", err)
 	}
-	log.Println("updated last read to", time.Now().UnixMilli()+1)
 	token.LastRead = time.Now().UnixMilli() + 1
 	caching.UpdateToken(token)
 
 	adapters, nodes := caching.MembersToPipes(members)
-
-	log.Println(adapters)
-	log.Println(nodes)
-
 	event := MessageEvent(message)
-
-	log.Println("sending message..")
 
 	send.Pipe(send.ProtocolWS, pipes.Message{
 		Channel: pipes.Conversation(adapters, nodes),

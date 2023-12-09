@@ -13,10 +13,10 @@ type Message struct {
 
 	Conversation string `json:"conversation" gorm:"not null"`
 	Certificate  string `json:"certificate" gorm:"not null"`
-	Creation     int64  `json:"creation" gorm:"autoUpdateTime:milli"` // Unix timestamp (ms)
-	Data         string `json:"data" gorm:"not null"`                 // Encrypted data
-	Edited       bool   `json:"edited" gorm:"not null"`               // Edited flag
-	Sender       string `json:"sender" gorm:"not null"`               // Sender ID (of conversation token)
+	Creation     int64  `json:"creation"`               // Unix timestamp (SET BY THE CLIENT, EXTREMELY IMPORTANT FOR SIGNATURES)
+	Data         string `json:"data" gorm:"not null"`   // Encrypted data
+	Edited       bool   `json:"edited" gorm:"not null"` // Edited flag
+	Sender       string `json:"sender" gorm:"not null"` // Sender ID (of conversation token)
 }
 
 func CheckSize(message string) bool {
