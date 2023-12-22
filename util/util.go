@@ -5,15 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"io"
-	"log"
 	"math/big"
-	"net/http"
 	"strconv"
-	"strings"
-
-	integration "fajurion.com/node-integration"
-	"github.com/bytedance/sonic"
 )
 
 var Testing = false
@@ -43,72 +36,18 @@ func GenerateToken(tkLength int32) string {
 	return string(s)
 }
 
-var Protocol = "http://"
+// Hashes using SHA256
+func HashString(str string) string {
 
-func PostRequest(url string, body map[string]interface{}) (map[string]interface{}, error) {
-	return PostRaw(integration.BasePath+url, body)
+	hashed := sha256.Sum256([]byte(str))
+	return base64.StdEncoding.EncodeToString(hashed[:])
 }
 
-func PostRaw(url string, body map[string]interface{}) (map[string]interface{}, error) {
+// Hashes using SHA256
+func Hash(str string) []byte {
 
-	req, err := sonic.Marshal(body)
-
-	if err != nil {
-		return nil, err
-	}
-
-	log.Println("request to", string(url))
-	reader := strings.NewReader(string(req))
-
-	res, err := http.Post(url, "application/json", reader)
-	if err != nil {
-		return nil, err
-	}
-
-	buf := new(strings.Builder)
-	_, err = io.Copy(buf, res.Body)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var data map[string]interface{}
-	err = sonic.Unmarshal([]byte(buf.String()), &data)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
-}
-
-type NormalResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
-
-func PostBytes(url string, body map[string]interface{}) (string, error) {
-	return PostBytesRaw(integration.BasePath+url, body)
-}
-
-func PostBytesRaw(url string, body map[string]interface{}) (string, error) {
-
-	req, _ := sonic.Marshal(body)
-
-	reader := strings.NewReader(string(req))
-
-	res, err := http.Post(url, "application/json", reader)
-	if err != nil {
-		return "", err
-	}
-
-	buf := new(strings.Builder)
-	_, err = io.Copy(buf, res.Body)
-
-	return buf.String(), err
-}
-
-func First(a interface{}, _ interface{}) interface{} {
-	return a
+	hashed := sha256.Sum256([]byte(str))
+	return hashed[:]
 }
 
 func Node64(id int64) string {
@@ -122,18 +61,4 @@ func NodeTo64(id string) int64 {
 	}
 
 	return i
-}
-
-// Hashes using SHA256
-func HashString(str string) string {
-
-	hashed := sha256.Sum256([]byte(str))
-	return base64.StdEncoding.EncodeToString(hashed[:])
-}
-
-// Hashes using SHA256
-func Hash(str string) []byte {
-
-	hashed := sha256.Sum256([]byte(str))
-	return hashed[:]
 }

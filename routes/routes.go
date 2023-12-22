@@ -22,6 +22,12 @@ import (
 
 func Setup(router fiber.Router) {
 
+	router.Post("/pub", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"pub": integration.PackageRSAPublicKey(integration.NodePublicKey),
+		})
+	})
+
 	// Unauthorized routes (for backend/nodes only)
 	router.Route("/auth", auth.Setup)
 	router.Post("/ping", ping.Pong)
@@ -81,7 +87,7 @@ func setupPipesFiber(router fiber.Router) {
 				log.Println("Client disconnected:", client.ID)
 			}
 
-			util.PostRequest("/node/disconnect", map[string]interface{}{
+			integration.PostRequest("/node/disconnect", map[string]interface{}{
 				"node":    util.NODE_ID,
 				"token":   util.NODE_TOKEN,
 				"session": client.Session,

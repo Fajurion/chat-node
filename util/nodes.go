@@ -14,7 +14,7 @@ type AppToken struct {
 
 func ConnectToApp(account string, session string, app uint, cluster uint) (AppToken, error) {
 
-	res, err := PostRequest("/node/get_lowest", map[string]interface{}{
+	res, err := integration.PostRequest("/node/get_lowest", map[string]interface{}{
 		"account": account,
 		"session": session,
 		"app":     app,

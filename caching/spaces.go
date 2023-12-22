@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	integration "fajurion.com/node-integration"
 	"github.com/dgraph-io/ristretto"
 )
 
@@ -56,7 +57,7 @@ func LeaveSpace(accId string) bool {
 	space := obj.(SpaceInfo)
 
 	// Disconnect from space
-	body, err := util.PostRaw(util.Protocol+space.Domain+"/leave", map[string]interface{}{
+	body, err := integration.PostRequestNoTC(integration.Protocol+space.Domain+"/leave", map[string]interface{}{
 		"conn": space.ConnectionID,
 	})
 	if err != nil {
