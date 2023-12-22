@@ -8,6 +8,7 @@ import (
 	"chat-node/service"
 	"chat-node/util"
 	"chat-node/util/requests"
+	"encoding/base64"
 	"log"
 	"time"
 
@@ -22,15 +23,60 @@ import (
 
 func Setup(router fiber.Router) {
 
+	// Return the public key for TC Protection
 	router.Post("/pub", func(c *fiber.Ctx) error {
+
+		// Return the public key in a packaged form (string)
 		return c.JSON(fiber.Map{
 			"pub": integration.PackageRSAPublicKey(integration.NodePublicKey),
 		})
 	})
 
+	router.Post("/ping", ping.Pong)
+
+	router.Route("/", encryptedRoutes)
+}
+
+func encryptedRoutes(router fiber.Router) {
+
+	// Add Through Cloudflare Protection middleware
+	router.Use(func(c *fiber.Ctx) error {
+
+		// Get the AES encryption key from the Auth-Tag header
+		aesKeyEncoded, valid := c.GetReqHeaders()["Auth-Tag"]
+		if !valid {
+			log.Println("no header")
+			return c.SendStatus(fiber.StatusPreconditionFailed)
+		}
+		aesKeyEncrypted, err := base64.StdEncoding.DecodeString(aesKeyEncoded)
+		if err != nil {
+			log.Println("no decoding")
+			return c.SendStatus(fiber.StatusPreconditionFailed)
+		}
+
+		// Decrypt the AES key using the private key of this node
+		aesKey, err := integration.DecryptRSA(integration.NodePrivateKey, aesKeyEncrypted)
+		if err != nil {
+			return c.SendStatus(fiber.StatusPreconditionRequired)
+		}
+
+		// Decrypt the request body using the key attached to the Auth-Tag header
+		decrypted, err := integration.DecryptAES(aesKey, c.Body())
+		if err != nil {
+			return c.SendStatus(fiber.StatusNetworkAuthenticationRequired)
+		}
+
+		// Set some variables for use when sending back the response
+		c.Locals("body", decrypted)
+		c.Locals("key", aesKey)
+		c.Locals("srv_pub", integration.NodePrivateKey)
+
+		// Go to the next middleware/handler
+		return c.Next()
+	})
+
 	// Unauthorized routes (for backend/nodes only)
 	router.Route("/auth", auth.Setup)
-	router.Post("/ping", ping.Pong)
 
 	setupPipesFiber(router)
 
@@ -44,14 +90,17 @@ func Setup(router fiber.Router) {
 		// Checks if the token is expired
 		SuccessHandler: func(c *fiber.Ctx) error {
 
+			// Check if the JWT is expired
 			if util.IsExpired(c) {
 				return requests.InvalidRequest(c)
 			}
 
+			// Check if the JWT is a remote id
 			if !util.IsRemoteId(c) {
 				return requests.InvalidRequest(c)
 			}
 
+			// Go to the next middleware/handler
 			return c.Next()
 		},
 
@@ -78,15 +127,20 @@ func setupPipesFiber(router fiber.Router) {
 
 		// Report nodes as offline
 		NodeDisconnectHandler: func(node pipes.Node) {
+
+			// Report that a node is offline to the backend
 			integration.ReportOffline(node)
 		},
 
 		// Handle client disconnect
 		ClientDisconnectHandler: func(client *pipesfiber.Client) {
+
+			// Print debug stuff if in debug mode
 			if integration.Testing {
 				log.Println("Client disconnected:", client.ID)
 			}
 
+			// Tell the backend that someone disconnected
 			integration.PostRequest("/node/disconnect", map[string]interface{}{
 				"node":    util.NODE_ID,
 				"token":   util.NODE_TOKEN,
@@ -99,6 +153,8 @@ func setupPipesFiber(router fiber.Router) {
 			if integration.Testing {
 				log.Println("Client connected:", client.ID)
 			}
+
+			// Initialize the user and check if he needs to be disconnected
 			disconnect := !service.User(client)
 			log.Println("Setup finish")
 			if disconnect {
