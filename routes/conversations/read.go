@@ -5,7 +5,6 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/util"
-	"chat-node/util/requests"
 	"log"
 	"time"
 
@@ -27,7 +26,7 @@ func (r *ReadConversationRequest) Validate() bool {
 func read(c *fiber.Ctx) error {
 
 	var req ReadConversationRequest
-	if err := c.BodyParser(&req); err != nil {
+	if err := integration.BodyParser(c, &req); err != nil {
 		return integration.InvalidRequest(c, err.Error())
 	}
 
@@ -49,5 +48,5 @@ func read(c *fiber.Ctx) error {
 	token.LastRead = time.Now().UnixMilli()
 	caching.UpdateToken(token)
 
-	return requests.SuccessfulRequest(c)
+	return integration.SuccessfulRequest(c)
 }

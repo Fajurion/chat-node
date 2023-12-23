@@ -7,7 +7,6 @@ import (
 	"chat-node/routes/ping"
 	"chat-node/service"
 	"chat-node/util"
-	"chat-node/util/requests"
 	"encoding/base64"
 	"log"
 	"time"
@@ -92,12 +91,12 @@ func encryptedRoutes(router fiber.Router) {
 
 			// Check if the JWT is expired
 			if util.IsExpired(c) {
-				return requests.InvalidRequest(c)
+				return integration.InvalidRequest(c, "expired remote id")
 			}
 
 			// Check if the JWT is a remote id
 			if !util.IsRemoteId(c) {
-				return requests.InvalidRequest(c)
+				return integration.InvalidRequest(c, "jwt isn't a remote id")
 			}
 
 			// Go to the next middleware/handler

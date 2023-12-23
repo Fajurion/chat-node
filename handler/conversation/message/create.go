@@ -4,7 +4,6 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/util"
-	"chat-node/util/requests"
 	"log"
 
 	"github.com/Fajurion/pipes"
@@ -63,7 +62,7 @@ func createMessage(message wshandler.Message) {
 	}
 
 	// Send to the conversation
-	members, nodes, err := requests.LoadConversationDetails(conversation.ID)
+	members, nodes, err := integration.LoadConversationDetails(conversation.ID)
 	if err != nil {
 		wshandler.ErrorResponse(message, "server.error")
 		return

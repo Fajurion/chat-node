@@ -2,8 +2,9 @@ package conversation_routes
 
 import (
 	"chat-node/caching"
-	"chat-node/util/requests"
+	"fmt"
 
+	integration "fajurion.com/node-integration"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -23,20 +24,20 @@ type returnableMemberToken struct {
 func listTokens(c *fiber.Ctx) error {
 
 	var req listMembersRequest
-	if c.BodyParser(&req) != nil {
-		return requests.InvalidRequest(c)
+	if integration.BodyParser(c, &req) != nil {
+		return integration.InvalidRequest(c, "invalid request")
 	}
 
 	// Validate token
 	token, err := caching.ValidateToken(req.ID, req.Token)
 	if err != nil {
-		return requests.InvalidRequest(c)
+		return integration.InvalidRequest(c, fmt.Sprintf("invalid conversation token: %s", err.Error()))
 	}
 
 	// We use methods without caching here because if a member leaves on a different node, the cache won't be cleared
 	members, err := caching.LoadMembersNew(token.Conversation)
 	if err != nil {
-		return requests.InvalidRequest(c)
+		return integration.InvalidRequest(c, fmt.Sprintf("couldn't load members: %s", err.Error()))
 	}
 
 	realMembers := make([]returnableMemberToken, len(members))
@@ -44,7 +45,7 @@ func listTokens(c *fiber.Ctx) error {
 
 		member, err := caching.GetTokenNew(memberToken.TokenID)
 		if err != nil && err != gorm.ErrRecordNotFound {
-			return requests.FailedRequest(c, "server.error", err)
+			return integration.FailedRequest(c, "server.error", err)
 		}
 
 		realMembers[i] = returnableMemberToken{

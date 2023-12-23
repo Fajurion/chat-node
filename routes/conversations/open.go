@@ -29,7 +29,7 @@ type returnableToken struct {
 func openConversation(c *fiber.Ctx) error {
 
 	var req OpenConversationRequest
-	if err := c.BodyParser(&req); err != nil {
+	if err := integration.BodyParser(c, &req); err != nil {
 		return integration.InvalidRequest(c, err.Error())
 	}
 

@@ -1,8 +1,6 @@
 package message
 
 import (
-	"chat-node/util/requests"
-
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
 	"github.com/Fajurion/pipesfiber/wshandler"
@@ -18,7 +16,7 @@ func typingStatus(message wshandler.Message) {
 	id := message.Data["id"].(string)
 
 	// Send to the conversation
-	members, nodes, err := requests.LoadConversationDetails(id)
+	members, nodes, err := integration.LoadConversationDetails(id)
 	if err != nil {
 		return
 	}

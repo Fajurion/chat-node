@@ -30,7 +30,7 @@ func (r *MessageSendRequest) Validate() bool {
 func sendMessage(c *fiber.Ctx) error {
 
 	var req MessageSendRequest
-	if err := c.BodyParser(&req); err != nil {
+	if err := integration.BodyParser(c, &req); err != nil {
 		return integration.InvalidRequest(c, err.Error())
 	}
 

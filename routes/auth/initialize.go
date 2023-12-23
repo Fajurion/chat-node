@@ -2,8 +2,8 @@ package auth
 
 import (
 	"chat-node/util"
-	"chat-node/util/requests"
 
+	integration "fajurion.com/node-integration"
 	"github.com/Fajurion/pipesfiber"
 	"github.com/gofiber/fiber/v2"
 )
@@ -23,7 +23,7 @@ func initializeConnection(c *fiber.Ctx) error {
 
 	// Parse the request
 	var req intializeRequest
-	if err := c.BodyParser(&req); err != nil {
+	if err := integration.BodyParser(c, &req); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
@@ -39,7 +39,7 @@ func initializeConnection(c *fiber.Ctx) error {
 
 	// Check if there are too many users
 	if pipesfiber.GetConnections(req.Account) >= 3 {
-		return requests.FailedRequest(c, "too.many.connections", nil)
+		return integration.FailedRequest(c, "too.many.connections", nil)
 	}
 
 	pipesfiber.AddToken(tk, pipesfiber.ConnectionToken{

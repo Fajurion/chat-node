@@ -6,7 +6,7 @@ import (
 	"chat-node/database/conversations"
 	message_routes "chat-node/routes/conversations/message"
 	"chat-node/util"
-	"chat-node/util/requests"
+	"fmt"
 
 	integration "fajurion.com/node-integration"
 	"github.com/gofiber/fiber/v2"
@@ -22,33 +22,33 @@ type generateTokenRequest struct {
 func generateToken(c *fiber.Ctx) error {
 
 	var req generateTokenRequest
-	if c.BodyParser(&req) != nil {
-		return requests.InvalidRequest(c)
+	if integration.BodyParser(c, &req) != nil {
+		return integration.InvalidRequest(c, "invalid request")
 	}
 
 	token, err := caching.ValidateToken(req.ID, req.Token)
 	if err != nil {
-		return requests.InvalidRequest(c)
+		return integration.InvalidRequest(c, fmt.Sprintf("invalid token", err.Error()))
 	}
 
 	// Check if conversation is group
 	var conversation conversations.Conversation
-	if database.DBConn.Where("id = ?", token.Conversation).Find(&conversation).Error != nil {
-		return requests.InvalidRequest(c)
+	if err := database.DBConn.Where("id = ?", token.Conversation).Find(&conversation).Error; err != nil {
+		return integration.InvalidRequest(c, fmt.Sprintf("couldn't find conversation in database: %s", err.Error()))
 	}
 
 	if conversation.Type != conversations.TypeGroup {
-		return requests.FailedRequest(c, "no.group", nil)
+		return integration.FailedRequest(c, "no.group", nil)
 	}
 
 	// Check requirements for a new token
 	members, err := caching.LoadMembers(token.Conversation)
 	if err != nil {
-		return requests.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, "server.error", err)
 	}
 
 	if len(members) >= 100 {
-		return requests.FailedRequest(c, "limit.reached", nil)
+		return integration.FailedRequest(c, "limit.reached", nil)
 	}
 
 	// Generate a new token
@@ -61,8 +61,8 @@ func generateToken(c *fiber.Ctx) error {
 		Data:         req.Data,
 	}
 
-	if database.DBConn.Create(&generated).Error != nil {
-		return requests.FailedRequest(c, "server.error", nil)
+	if err := database.DBConn.Create(&generated).Error; err != nil {
+		return integration.FailedRequest(c, "server.error", err)
 	}
 
 	err = message_routes.SendSystemMessage(token.Conversation, "group.member_join", []string{message_routes.AttachAccount(token.Data)})
