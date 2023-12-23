@@ -55,7 +55,7 @@ func listTokens(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.JSON(fiber.Map{
+	return integration.ReturnJSON(c, fiber.Map{
 		"success": true,
 		"members": realMembers,
 	})

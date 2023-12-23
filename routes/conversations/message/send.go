@@ -100,7 +100,7 @@ func sendMessage(c *fiber.Ctx) error {
 		Event:   event,
 	})
 
-	return c.JSON(fiber.Map{
+	return integration.ReturnJSON(c, fiber.Map{
 		"success": true,
 		"message": message,
 	})

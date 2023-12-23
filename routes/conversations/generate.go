@@ -70,7 +70,7 @@ func generateToken(c *fiber.Ctx) error {
 		return integration.FailedRequest(c, "server.error", err)
 	}
 
-	return c.JSON(fiber.Map{
+	return integration.ReturnJSON(c, fiber.Map{
 		"success": true,
 		"id":      generated.ID,
 		"token":   generated.Token,

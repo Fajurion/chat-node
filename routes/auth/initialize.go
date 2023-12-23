@@ -48,7 +48,7 @@ func initializeConnection(c *fiber.Ctx) error {
 		Data:    nil,
 	})
 
-	return c.JSON(fiber.Map{
+	return integration.ReturnJSON(c, fiber.Map{
 		"success": true,
 		"load":    0,
 		"token":   tk,

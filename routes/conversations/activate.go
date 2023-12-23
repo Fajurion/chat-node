@@ -93,7 +93,7 @@ func activate(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.JSON(fiber.Map{
+	return integration.ReturnJSON(c, fiber.Map{
 		"success": true,
 		"type":    conversation.Type,
 		"data":    conversation.Data,
