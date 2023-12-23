@@ -7,7 +7,9 @@ import (
 	"chat-node/routes/ping"
 	"chat-node/service"
 	"chat-node/util"
+	"crypto/rsa"
 	"encoding/base64"
+	"errors"
 	"log"
 	"time"
 
@@ -16,6 +18,7 @@ import (
 	"github.com/Fajurion/pipes/adapter"
 	"github.com/Fajurion/pipesfiber"
 	pipesfroutes "github.com/Fajurion/pipesfiber/routes"
+	"github.com/bytedance/sonic"
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 )
@@ -32,6 +35,9 @@ func Setup(router fiber.Router) {
 	})
 
 	router.Post("/ping", ping.Pong)
+
+	// Pipes fiber doesn't need(/support) encrypted routes
+	setupPipesFiber(router, integration.NodePublicKey)
 
 	router.Route("/", encryptedRoutes)
 }
@@ -77,8 +83,6 @@ func encryptedRoutes(router fiber.Router) {
 	// Unauthorized routes (for backend/nodes only)
 	router.Route("/auth", auth.Setup)
 
-	setupPipesFiber(router)
-
 	// Authorized by using a remote id or normal token
 	router.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{
@@ -118,7 +122,7 @@ func encryptedRoutes(router fiber.Router) {
 	router.Route("/account", account_routes.SetupRoutes)
 }
 
-func setupPipesFiber(router fiber.Router) {
+func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 	adapter.SetupCaching()
 	pipesfiber.Setup(pipesfiber.Config{
 		ExpectedConnections: 10_0_0_0,       // 10 thousand, but funny
@@ -166,6 +170,42 @@ func setupPipesFiber(router fiber.Router) {
 		ClientEnterNetworkHandler: func(client *pipesfiber.Client) bool {
 			return false
 		},
+
+		//* Set the decoding middleware to use encryption
+		DecodingMiddleware: EncryptionDecodingMiddleware,
 	})
 	router.Route("/", pipesfroutes.SetupRoutes)
+}
+
+const EncryptionKeyLength = 256 // Default length of the key
+
+// Middleware for pipes-fiber to add encryption support
+func EncryptionDecodingMiddleware(client *pipesfiber.Client, bytes []byte) (pipesfiber.Message, error) {
+
+	if len(bytes) <= EncryptionKeyLength+1 {
+		return pipesfiber.Message{}, errors.New("message too short")
+	}
+
+	// Decrypt the AES key
+	keyEncrypted := bytes[0:EncryptionKeyLength]
+	key, err := integration.DecryptRSA(integration.NodePrivateKey, keyEncrypted)
+	if err != nil {
+		return pipesfiber.Message{}, err
+	}
+
+	// Decrypt the message using AES
+	msg := bytes[:EncryptionKeyLength]
+	messageEncoded, err := integration.DecryptAES(key, msg)
+	if err != nil {
+		return pipesfiber.Message{}, err
+	}
+
+	// Unmarshal the message using sonic
+	var message pipesfiber.Message
+	err = sonic.Unmarshal(messageEncoded, &message)
+	if err != nil {
+		return pipesfiber.Message{}, err
+	}
+
+	return message, nil
 }
