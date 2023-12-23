@@ -28,7 +28,7 @@ func generateToken(c *fiber.Ctx) error {
 
 	token, err := caching.ValidateToken(req.ID, req.Token)
 	if err != nil {
-		return integration.InvalidRequest(c, fmt.Sprintf("invalid token", err.Error()))
+		return integration.InvalidRequest(c, fmt.Sprintf("invalid token: %s", err.Error()))
 	}
 
 	// Check if conversation is group
