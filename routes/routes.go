@@ -153,6 +153,11 @@ func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 
 		// Handle enter network
 		ClientConnectHandler: func(client *pipesfiber.Client, key string) bool {
+			return false
+		},
+
+		// Handle client entering network
+		ClientEnterNetworkHandler: func(client *pipesfiber.Client, key string) bool {
 			if integration.Testing {
 				log.Println("Client connected:", client.ID)
 			}
@@ -181,11 +186,6 @@ func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 				log.Println("Something went wrong with setup: ", client.ID)
 			}
 			return disconnect
-		},
-
-		// Handle client entering network
-		ClientEnterNetworkHandler: func(client *pipesfiber.Client, key string) bool {
-			return false
 		},
 
 		//* Set the decoding middleware to use encryption
