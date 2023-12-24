@@ -152,10 +152,27 @@ func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 		},
 
 		// Handle enter network
-		ClientConnectHandler: func(client *pipesfiber.Client) bool {
+		ClientConnectHandler: func(client *pipesfiber.Client, key string) bool {
 			if integration.Testing {
 				log.Println("Client connected:", client.ID)
 			}
+
+			// Get the AES key from attachments
+			log.Println("encryption key:", key)
+			aesKeyEncrypted, err := base64.StdEncoding.DecodeString(key)
+			if err != nil {
+				return true
+			}
+
+			// Decrypt AES key
+			aesKey, err := integration.DecryptRSA(integration.NodePrivateKey, aesKeyEncrypted)
+			if err != nil {
+				return true
+			}
+
+			// Set AES key in client data
+			client.Data = ExtraClientData{aesKey}
+			pipesfiber.UpdateClient(client)
 
 			// Initialize the user and check if he needs to be disconnected
 			disconnect := !service.User(client)
@@ -167,7 +184,7 @@ func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 		},
 
 		// Handle client entering network
-		ClientEnterNetworkHandler: func(client *pipesfiber.Client) bool {
+		ClientEnterNetworkHandler: func(client *pipesfiber.Client, key string) bool {
 			return false
 		},
 
@@ -187,37 +204,15 @@ type ExtraClientData struct {
 	Key []byte // AES encryption key
 }
 
-const EncryptionKeyLength = 256 // Default length of the key
-
 // Middleware for pipes-fiber to add encryption support
 func EncryptionDecodingMiddleware(client *pipesfiber.Client, bytes []byte) (pipesfiber.Message, error) {
 
 	log.Println("DECRYPTING")
 
-	if len(bytes) <= EncryptionKeyLength+1 {
-		return pipesfiber.Message{}, errors.New("message too short")
-	}
-
-	var key []byte
-	if client.Data == nil {
-
-		// Decrypt the AES key
-		keyEncrypted := bytes[0:EncryptionKeyLength]
-		var err error
-		key, err = integration.DecryptRSA(integration.NodePrivateKey, keyEncrypted)
-		if err != nil {
-			return pipesfiber.Message{}, err
-		}
-
-		// Set the encryption key
-		client.Data = ExtraClientData{key}
-		pipesfiber.UpdateClient(client)
-	}
-
 	// Decrypt the message using AES
-	msg := bytes[EncryptionKeyLength:]
-	log.Println(len(msg))
-	messageEncoded, err := integration.DecryptAES(key, msg)
+	key := client.Data.(ExtraClientData).Key
+	log.Println(len(bytes))
+	messageEncoded, err := integration.DecryptAES(key, bytes)
 	if err != nil {
 		return pipesfiber.Message{}, err
 	}
