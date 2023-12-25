@@ -67,9 +67,9 @@ func sendMessage(c *fiber.Ctx) error {
 	}
 
 	messageId := util.GenerateToken(32)
-	certificate, err := conversations.GenerateCertificate(messageId, req.TokenID)
+	certificate, err := conversations.GenerateCertificate(messageId, req.Conversation, req.TokenID)
 	if err != nil {
-		return integration.FailedRequest(c, "server.error", nil)
+		return integration.FailedRequest(c, "server.error", err)
 	}
 
 	message := conversations.Message{

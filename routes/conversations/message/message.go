@@ -17,8 +17,16 @@ const systemSender = "6969"
 
 func SetupRoutes(router fiber.Router) {
 	router.Post("/send", sendMessage)
-	router.Post("/send_system", sendSystem)
+	router.Post("/delete", deleteMessage)
 }
+
+// System messages
+const DeletedConversation = "conv.deleted"
+const DeletedMessage = "msg.deleted"
+const GroupNewAdmin = "group.new_admin"
+const GroupRankChange = "group.rank_change"
+const GroupMemberJoin = "group.member_join"
+const GroupMemberLeave = "group.member_leave"
 
 func SendSystemMessage(conversation string, content string, attachments []string) error {
 

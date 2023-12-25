@@ -69,7 +69,7 @@ func promoteToken(c *fiber.Ctx) error {
 		return integration.FailedRequest(c, "server.error", err)
 	}
 
-	err = message_routes.SendSystemMessage(token.Conversation, "group.rank_change", []string{fmt.Sprintf("%d", prevRank), fmt.Sprintf("%d", userToken.Rank),
+	err = message_routes.SendSystemMessage(token.Conversation, message_routes.GroupRankChange, []string{fmt.Sprintf("%d", prevRank), fmt.Sprintf("%d", userToken.Rank),
 		message_routes.AttachAccount(userToken.Data), message_routes.AttachAccount(token.Data)})
 	if err != nil {
 		return integration.FailedRequest(c, "server.error", err)

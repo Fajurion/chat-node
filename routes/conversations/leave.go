@@ -53,7 +53,7 @@ func leaveConversation(c *fiber.Ctx) error {
 	if conversation.Type == conversations.TypePrivateMessage && len(members) == 1 {
 
 		// Send deletion message (this will automatically get rid of the conversation because the other guy will leave after)
-		err := message_routes.SendSystemMessage(token.Conversation, "conv.deleted", []string{})
+		err := message_routes.SendSystemMessage(token.Conversation, message_routes.DeletedConversation, []string{})
 		if err != nil {
 			return integration.FailedRequest(c, "server.error", err)
 		}
@@ -103,7 +103,7 @@ func leaveConversation(c *fiber.Ctx) error {
 					return integration.FailedRequest(c, "server.error", nil)
 				}
 
-				err = message_routes.SendSystemMessage(token.Conversation, "group.new_admin", []string{message_routes.AttachAccount(bestCase.Data)})
+				err = message_routes.SendSystemMessage(token.Conversation, message_routes.GroupNewAdmin, []string{message_routes.AttachAccount(bestCase.Data)})
 				if err != nil {
 					return integration.FailedRequest(c, "server.error", nil)
 				}
@@ -111,7 +111,7 @@ func leaveConversation(c *fiber.Ctx) error {
 		}
 	}
 
-	message_routes.SendSystemMessage(token.Conversation, "group.member_leave", []string{
+	message_routes.SendSystemMessage(token.Conversation, message_routes.GroupMemberLeave, []string{
 		message_routes.AttachAccount(token.Data),
 	})
 

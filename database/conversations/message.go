@@ -24,18 +24,18 @@ func CheckSize(message string) bool {
 }
 
 type CertificateClaims struct {
-	MID string `json:"mid"` // Message ID
-	Sd  string `json:"sd"`  // Sender ID
-	Ct  int64  `json:"ct"`  // Creation time
+	Message      string `json:"mid"` // Message ID
+	Conversation string `json:"c"`   // Conversation ID
+	Sender       string `json:"sd"`  // Sender ID
 	jwt.RegisteredClaims
 }
 
-func GenerateCertificate(id string, sender string) (string, error) {
+func GenerateCertificate(id string, conversation string, sender string) (string, error) {
 
 	tk := jwt.NewWithClaims(jwt.SigningMethodHS256, CertificateClaims{
-		MID: id,
-		Sd:  sender,
-		Ct:  time.Now().Unix(),
+		Message:      id,
+		Conversation: conversation,
+		Sender:       sender,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer: "chat-node",
 		},
@@ -67,6 +67,6 @@ func GetCertificateClaims(certificate string) (*CertificateClaims, bool) {
 	return &CertificateClaims{}, false
 }
 
-func (m *CertificateClaims) Valid(id string, sender string) bool {
-	return m.MID == id && m.Sd == sender
+func (m *CertificateClaims) Valid(id string, conversation string, sender string) bool {
+	return m.Message == id && m.Conversation == conversation && m.Sender == sender
 }

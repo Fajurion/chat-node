@@ -163,7 +163,6 @@ func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 			}
 
 			// Get the AES key from attachments
-			log.Println("encryption key:", key)
 			aesKeyEncrypted, err := base64.StdEncoding.DecodeString(key)
 			if err != nil {
 				return true
@@ -174,6 +173,9 @@ func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 			if err != nil {
 				return true
 			}
+
+			// Just for debug purposes
+			log.Println(base64.StdEncoding.EncodeToString(aesKey))
 
 			// Set AES key in client data
 			client.Data = ExtraClientData{aesKey}
@@ -246,5 +248,6 @@ func EncryptionClientEncodingMiddleware(client *pipesfiber.Client, message []byt
 
 	// Encrypt the message using the client encryption key
 	key := client.Data.(ExtraClientData).Key
+	log.Println("ENCODING KEY: " + base64.StdEncoding.EncodeToString(key))
 	return integration.EncryptAES(key, message)
 }
