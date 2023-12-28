@@ -35,15 +35,25 @@ func subscribe(message wshandler.Message) {
 
 	statusMessage := message.Data["status"].(string)
 	readDates := make(map[string]int64, len(conversationTokens))
+	adapters := make([]string, len(conversationTokens))
 	for _, token := range conversationTokens {
 
 		// Register adapter for the subscription
 		adapter.AdaptWS(adapter.Adapter{
 			ID: "s-" + token.Token,
+			// TODO: Fix this not disconnecting
 			Receive: func(ctx *adapter.Context) error {
-				return message.Client.SendEvent(*ctx.Event)
+				client := *message.Client
+				log.Println(ctx.Adapter.ID, token.Token, client.ID)
+				err := client.SendEvent(*ctx.Event)
+				if err != nil {
+					log.Println("COULDN'T SEND:", err.Error())
+				}
+				return err
 			},
 		})
+		log.Println("SUB", "s-"+token.Token)
+		adapters = append(adapters, "s-"+token.Token)
 
 		var memberIds []string
 		var memberNodes []string
@@ -73,6 +83,9 @@ func subscribe(message wshandler.Message) {
 		readDates[token.Conversation] = token.LastRead
 		AddConversationToken(TokenTask{"s-" + token.Token, token.Conversation, date})
 	}
+
+	// Insert adapters into cache (to be deleted when disconnecting)
+	caching.InsertAdapters(message.Client.ID, adapters)
 
 	wshandler.NormalResponse(message, map[string]interface{}{
 		"success": true,

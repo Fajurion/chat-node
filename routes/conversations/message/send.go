@@ -5,6 +5,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/util"
+	"log"
 	"time"
 
 	integration "fajurion.com/node-integration"
@@ -71,6 +72,8 @@ func sendMessage(c *fiber.Ctx) error {
 	if err != nil {
 		return integration.FailedRequest(c, "server.error", err)
 	}
+
+	log.Println(certificate)
 
 	message := conversations.Message{
 		ID:           messageId,

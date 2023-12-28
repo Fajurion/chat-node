@@ -4,8 +4,10 @@ import (
 	"chat-node/caching"
 	"chat-node/database"
 	"chat-node/database/conversations"
+	"log"
 
 	integration "fajurion.com/node-integration"
+	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -38,9 +40,27 @@ func deleteMessage(c *fiber.Ctx) error {
 		return integration.InvalidRequest(c, "invalid certificate claims")
 	}
 
+	log.Println(claims)
+
 	// Check if certificate is valid for the provided conversation token
+	log.Println("message:", claims.Message, claims.Message)
+	log.Println("conv:", claims.Conversation, token.Conversation)
+	log.Println("sender:", claims.Sender, token.ID)
 	if !claims.Valid(claims.Message, token.Conversation, token.ID) {
 		return integration.InvalidRequest(c, "no permssion to delete message")
+	}
+
+	// Check if there was already a deletion request
+	contentJson, err := sonic.MarshalString(map[string]interface{}{
+		"c": DeletedMessage,
+		"a": []string{claims.Message},
+	})
+	if err != nil {
+		return integration.FailedRequest(c, "server.error", err)
+	}
+	var justHereForNoNilPointer conversations.Message
+	if err := database.DBConn.Where("data = ? AND conversation = ?", contentJson, claims.Conversation).Select("id").Take(&justHereForNoNilPointer).Error; err == nil {
+		return integration.FailedRequest(c, "already.deleted", nil)
 	}
 
 	// Delete the message in the database

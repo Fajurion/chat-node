@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"chat-node/caching"
 	account_routes "chat-node/routes/account"
 	"chat-node/routes/auth"
 	conversation_routes "chat-node/routes/conversations"
@@ -8,6 +9,7 @@ import (
 	"chat-node/service"
 	"chat-node/util"
 	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"log"
@@ -143,6 +145,12 @@ func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 				log.Println("Client disconnected:", client.ID)
 			}
 
+			// Remove all adapters from pipes
+			err := caching.DeleteAdapters(client.ID)
+			if err != nil {
+				log.Println("COULDN'T DELETE ADAPTERS:", err.Error())
+			}
+
 			// Tell the backend that someone disconnected
 			integration.PostRequest("/node/disconnect", map[string]interface{}{
 				"node":    util.NODE_ID,
@@ -248,6 +256,9 @@ func EncryptionClientEncodingMiddleware(client *pipesfiber.Client, message []byt
 
 	// Encrypt the message using the client encryption key
 	key := client.Data.(ExtraClientData).Key
-	log.Println("ENCODING KEY: " + base64.StdEncoding.EncodeToString(key))
-	return integration.EncryptAES(key, message)
+	log.Println("ENCODING KEY: "+base64.StdEncoding.EncodeToString(key), client.ID, string(message))
+	result, err := integration.EncryptAES(key, message)
+	hash := sha256.Sum256(result)
+	log.Println("hash: " + base64.StdEncoding.EncodeToString(hash[:]))
+	return result, err
 }
