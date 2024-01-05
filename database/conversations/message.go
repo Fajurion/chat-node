@@ -30,6 +30,7 @@ type CertificateClaims struct {
 	jwt.RegisteredClaims
 }
 
+// Generate a message certificate (used to verify message sender when editing/deleting messages)
 func GenerateCertificate(id string, conversation string, sender string) (string, error) {
 
 	tk := jwt.NewWithClaims(jwt.SigningMethodHS256, CertificateClaims{
@@ -50,6 +51,7 @@ func GenerateCertificate(id string, conversation string, sender string) (string,
 	return token, nil
 }
 
+// Get all claims in a message certificate
 func GetCertificateClaims(certificate string) (*CertificateClaims, bool) {
 
 	token, err := jwt.ParseWithClaims(certificate, &CertificateClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -67,6 +69,7 @@ func GetCertificateClaims(certificate string) (*CertificateClaims, bool) {
 	return &CertificateClaims{}, false
 }
 
+// Check if a message certificate is valid with some parameters
 func (m *CertificateClaims) Valid(id string, conversation string, sender string) bool {
 	return m.Message == id && m.Conversation == conversation && m.Sender == sender
 }

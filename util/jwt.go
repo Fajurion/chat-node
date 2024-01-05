@@ -47,11 +47,3 @@ func Permission(c *fiber.Ctx, perm int16) bool {
 
 	return lvl >= perm
 }
-
-func IsRemoteId(c *fiber.Ctx) bool {
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-
-	_, ok := claims["rid"]
-	return ok
-}

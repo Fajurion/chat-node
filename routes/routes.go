@@ -3,7 +3,6 @@ package routes
 import (
 	"chat-node/caching"
 	account_routes "chat-node/routes/account"
-	"chat-node/routes/auth"
 	conversation_routes "chat-node/routes/conversations"
 	"chat-node/routes/ping"
 	"chat-node/service"
@@ -82,13 +81,10 @@ func encryptedRoutes(router fiber.Router) {
 		return c.Next()
 	})
 
-	// Unauthorized routes (for backend/nodes only)
-	router.Route("/auth", auth.Setup)
-
 	// Authorized by using a remote id or normal token
 	router.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{
-			JWTAlg: jwtware.HS256,
+			JWTAlg: jwtware.HS512,
 			Key:    []byte(integration.JwtSecret),
 		},
 
@@ -97,12 +93,7 @@ func encryptedRoutes(router fiber.Router) {
 
 			// Check if the JWT is expired
 			if util.IsExpired(c) {
-				return integration.InvalidRequest(c, "expired remote id")
-			}
-
-			// Check if the JWT is a remote id
-			if !util.IsRemoteId(c) {
-				return integration.InvalidRequest(c, "jwt isn't a remote id")
+				return integration.InvalidRequest(c, "expired jwt token")
 			}
 
 			// Go to the next middleware/handler
@@ -127,6 +118,7 @@ func encryptedRoutes(router fiber.Router) {
 func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 	adapter.SetupCaching()
 	pipesfiber.Setup(pipesfiber.Config{
+		Secret:              []byte(integration.JwtSecret),
 		ExpectedConnections: 10_0_0_0,       // 10 thousand, but funny
 		SessionDuration:     time.Hour * 24, // This is kinda important
 
