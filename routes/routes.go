@@ -151,6 +151,11 @@ func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 			})
 		},
 
+		// Handle token validation (nothing to do here)
+		TokenValidateHandler: func(claims *pipesfiber.ConnectionTokenClaims, key string) bool {
+			return false
+		},
+
 		// Handle enter network
 		ClientConnectHandler: func(client *pipesfiber.Client, key string) bool {
 			return false
