@@ -29,7 +29,7 @@ func sendStatus(message wshandler.Message) {
 	}
 
 	// Send to other people
-	conversationTokens, _, members, ok := conversation.PrepareConversationTokens(message)
+	conversationTokens, _, members, _, ok := conversation.PrepareConversationTokens(message)
 	if !ok {
 		return
 	}

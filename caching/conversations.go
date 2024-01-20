@@ -60,7 +60,7 @@ func ValidateToken(id string, token string) (conversations.ConversationToken, er
 	return conversationToken, nil
 }
 
-func ValidateTokens(tokens *[]conversations.SentConversationToken) ([]conversations.ConversationToken, error) {
+func ValidateTokens(tokens *[]conversations.SentConversationToken) ([]conversations.ConversationToken, []string, error) {
 
 	// Check cache
 	foundTokens := []conversations.ConversationToken{}
@@ -82,17 +82,29 @@ func ValidateTokens(tokens *[]conversations.SentConversationToken) ([]conversati
 	// Get tokens from database
 	var conversationTokens []conversations.ConversationToken
 	if err := database.DBConn.Model(&conversations.ConversationToken{}).Where("id IN ?", notFoundIds).Find(&conversationTokens).Error; err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	for _, token := range conversationTokens {
 		conversationsCache.SetWithTTL(token.ID, token, 1, ConversationTTL)
 		if token.Token == notFound[token.ID].Token {
+			notFound[token.ID] = conversations.SentConversationToken{
+				ID:    "-",
+				Token: "-",
+			}
 			foundTokens = append(foundTokens, token)
 		}
 	}
 
-	return foundTokens, nil
+	// Get all missing tokens to delete those conversations from the client
+	missingTokens := []string{}
+	for id := range notFound {
+		if id != "-" {
+			missingTokens = append(missingTokens, id)
+		}
+	}
+
+	return foundTokens, missingTokens, nil
 }
 
 // Deletes cache and does database queries again (for when caching would break something)

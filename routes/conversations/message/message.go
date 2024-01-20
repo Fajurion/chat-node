@@ -21,7 +21,6 @@ func SetupRoutes(router fiber.Router) {
 }
 
 // System messages
-const DeletedConversation = "conv.deleted"
 const DeletedMessage = "msg.deleted"
 const GroupNewAdmin = "group.new_admin"
 const GroupRankChange = "group.rank_change"

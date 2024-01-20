@@ -52,10 +52,9 @@ func leaveConversation(c *fiber.Ctx) error {
 
 	if conversation.Type == conversations.TypePrivateMessage && len(members) == 1 {
 
-		// Send deletion message (this will automatically get rid of the conversation because the other guy will leave after)
-		err := message_routes.SendSystemMessage(token.Conversation, message_routes.DeletedConversation, []string{})
-		if err != nil {
-			return integration.FailedRequest(c, "server.error", err)
+		// Delete the conversation
+		if err := deleteConversation(conversation.ID); err != nil {
+			return integration.FailedRequest(c, integration.ErrorServer, err)
 		}
 
 		return integration.SuccessfulRequest(c)
@@ -64,7 +63,7 @@ func leaveConversation(c *fiber.Ctx) error {
 	if len(members) == 0 {
 
 		// Delete conversation
-		if err := database.DBConn.Delete(&conversations.Conversation{}, "id = ?", token.Conversation).Error; err != nil {
+		if err := deleteConversation(conversation.ID); err != nil {
 			return integration.FailedRequest(c, "server.error", err)
 		}
 

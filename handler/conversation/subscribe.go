@@ -22,8 +22,9 @@ func subscribe(message wshandler.Message) {
 	}
 
 	date := int64(message.Data["date"].(float64))
-	conversationTokens, tokenIds, members, ok := PrepareConversationTokens(message)
+	conversationTokens, tokenIds, members, missingTokens, ok := PrepareConversationTokens(message)
 	if !ok {
+		wshandler.ErrorResponse(message, "invalid")
 		return
 	}
 
@@ -57,7 +58,6 @@ func subscribe(message wshandler.Message) {
 
 		var memberIds []string
 		var memberNodes []string
-		log.Printf("%d", len(members[token.Conversation]))
 		if len(members[token.Conversation]) == 2 {
 			for _, member := range members[token.Conversation] {
 				if member.Token != token.Token {
@@ -66,7 +66,6 @@ func subscribe(message wshandler.Message) {
 				}
 			}
 		}
-		log.Printf("Sending to %d members", len(memberIds))
 
 		// Send the subscription event
 		send.Pipe(send.ProtocolWS, pipes.Message{
@@ -90,10 +89,12 @@ func subscribe(message wshandler.Message) {
 	wshandler.NormalResponse(message, map[string]interface{}{
 		"success": true,
 		"read":    readDates,
+		"missing": missingTokens,
 	})
 }
 
-func PrepareConversationTokens(message wshandler.Message) ([]conversations.ConversationToken, []string, map[string][]caching.StoredMember, bool) {
+// Returns: conversationTokens, tokenIds, members, missingTokens, success (bool)
+func PrepareConversationTokens(message wshandler.Message) ([]conversations.ConversationToken, []string, map[string][]caching.StoredMember, []string, bool) {
 
 	tokensUnparsed := message.Data["tokens"].([]interface{})
 	tokens := make([]conversations.SentConversationToken, len(tokensUnparsed))
@@ -107,13 +108,13 @@ func PrepareConversationTokens(message wshandler.Message) ([]conversations.Conve
 
 	if len(tokens) > 500 {
 		wshandler.ErrorResponse(message, "invalid")
-		return nil, nil, nil, false
+		return nil, nil, nil, nil, false
 	}
 
-	conversationTokens, err := caching.ValidateTokens(&tokens)
+	conversationTokens, missingTokens, err := caching.ValidateTokens(&tokens)
 	if err != nil {
 		wshandler.ErrorResponse(message, "server.error")
-		return nil, nil, nil, false
+		return nil, nil, nil, nil, false
 	}
 
 	tokenIds := make([]string, len(conversationTokens))
@@ -126,12 +127,12 @@ func PrepareConversationTokens(message wshandler.Message) ([]conversations.Conve
 	members, err := caching.LoadMembersArray(conversationIds)
 	if err != nil {
 		wshandler.ErrorResponse(message, "server.error")
-		return nil, nil, nil, false
+		return nil, nil, nil, nil, false
 	}
 
 	for id, token := range members {
 		log.Printf("%s %d", id, len(token))
 	}
 
-	return conversationTokens, tokenIds, members, true
+	return conversationTokens, tokenIds, members, missingTokens, true
 }
