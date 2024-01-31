@@ -26,6 +26,7 @@ var APP_ID uint = 0
 
 func main() {
 
+	fmt.Println("IF YOU ARE ON LINUX, MAKE SURE TO RUN THIS PROGRAM WITH RIGHT PERMISSIONS TO NODE_ENV")
 	log.SetOutput(os.Stdout)
 
 	// Setting up the node
