@@ -4,6 +4,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/util"
+	"chat-node/util/localization"
 
 	integration "fajurion.com/node-integration"
 	"github.com/gofiber/fiber/v2"
@@ -64,7 +65,7 @@ func openConversation(c *fiber.Ctx) error {
 	}
 
 	if err := database.DBConn.Create(&conv).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", nil)
+		return integration.FailedRequest(c, localization.ErrorServer, nil)
 	}
 
 	// Create tokens
@@ -84,7 +85,7 @@ func openConversation(c *fiber.Ctx) error {
 		}
 
 		if err := database.DBConn.Create(&tk).Error; err != nil {
-			return integration.FailedRequest(c, "server.error", err)
+			return integration.FailedRequest(c, localization.ErrorServer, err)
 		}
 
 		tokens[util.HashString(memberData)] = returnableToken{
@@ -103,7 +104,7 @@ func openConversation(c *fiber.Ctx) error {
 	}
 
 	if err := database.DBConn.Create(&adminToken).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	// TODO: Fix that the admin can pretend to be one of the users

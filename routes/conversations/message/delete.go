@@ -4,6 +4,7 @@ import (
 	"chat-node/caching"
 	"chat-node/database"
 	"chat-node/database/conversations"
+	"chat-node/util/localization"
 	"log"
 
 	integration "fajurion.com/node-integration"
@@ -56,7 +57,7 @@ func deleteMessage(c *fiber.Ctx) error {
 		"a": []string{claims.Message},
 	})
 	if err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 	var justHereForNoNilPointer conversations.Message
 	if err := database.DBConn.Where("data = ? AND conversation = ?", contentJson, claims.Conversation).Select("id").Take(&justHereForNoNilPointer).Error; err == nil {
@@ -65,12 +66,12 @@ func deleteMessage(c *fiber.Ctx) error {
 
 	// Delete the message in the database
 	if err := database.DBConn.Where("id = ?", claims.Message).Delete(&conversations.Message{}).Error; err != nil && err != gorm.ErrRecordNotFound {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	// Send a system message to delete the message on all clients who are storing it
 	if err := SendSystemMessage(claims.Conversation, DeletedMessage, []string{claims.Message}); err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	return integration.SuccessfulRequest(c)

@@ -6,6 +6,7 @@ import (
 	"chat-node/database/conversations"
 	message_routes "chat-node/routes/conversations/message"
 	"chat-node/util"
+	"chat-node/util/localization"
 	"fmt"
 
 	integration "fajurion.com/node-integration"
@@ -38,36 +39,36 @@ func generateToken(c *fiber.Ctx) error {
 	}
 
 	if conversation.Type != conversations.TypeGroup {
-		return integration.FailedRequest(c, "no.group", nil)
+		return integration.FailedRequest(c, localization.GroupInvalidType, nil)
 	}
 
 	// Check requirements for a new token
 	members, err := caching.LoadMembers(token.Conversation)
 	if err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	if len(members) >= 100 {
-		return integration.FailedRequest(c, "limit.reached", nil)
+		return integration.FailedRequest(c, localization.GroupMemberLimit, nil)
 	}
 
 	// Generate a new token
 	generated := conversations.ConversationToken{
 		ID:           util.GenerateToken(util.ConversationTokenIDLength),
 		Token:        util.GenerateToken(util.ConversationTokenLength),
-		Activated:    true,
+		Activated:    false,
 		Conversation: token.Conversation,
-		Rank:         conversations.RankAdmin,
+		Rank:         conversations.RankUser,
 		Data:         req.Data,
 	}
 
 	if err := database.DBConn.Create(&generated).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
-	err = message_routes.SendSystemMessage(token.Conversation, message_routes.GroupMemberJoin, []string{message_routes.AttachAccount(token.Data)})
+	err = message_routes.SendSystemMessage(token.Conversation, message_routes.GroupMemberInvite, []string{message_routes.AttachAccount(token.Data), message_routes.AttachAccount(generated.Data)})
 	if err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	return integration.ReturnJSON(c, fiber.Map{

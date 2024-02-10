@@ -5,6 +5,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/util"
+	"chat-node/util/localization"
 	"log"
 
 	"github.com/Fajurion/pipes"
@@ -17,20 +18,20 @@ import (
 func subscribe(message wshandler.Message) {
 
 	if message.ValidateForm("tokens", "status", "date") {
-		wshandler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, localization.InvalidRequest)
 		return
 	}
 
 	date := int64(message.Data["date"].(float64))
 	conversationTokens, tokenIds, members, missingTokens, ok := PrepareConversationTokens(message)
 	if !ok {
-		wshandler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, localization.InvalidRequest)
 		return
 	}
 
 	// Update all node IDs
 	if database.DBConn.Model(&conversations.ConversationToken{}).Where("id IN ?", tokenIds).Update("node", util.NodeTo64(pipes.CurrentNode.ID)).Error != nil {
-		wshandler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, localization.ErrorServer)
 		return
 	}
 
@@ -107,13 +108,13 @@ func PrepareConversationTokens(message wshandler.Message) ([]conversations.Conve
 	}
 
 	if len(tokens) > 500 {
-		wshandler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, localization.InvalidRequest)
 		return nil, nil, nil, nil, false
 	}
 
 	conversationTokens, missingTokens, err := caching.ValidateTokens(&tokens)
 	if err != nil {
-		wshandler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, localization.ErrorServer)
 		return nil, nil, nil, nil, false
 	}
 
@@ -126,7 +127,7 @@ func PrepareConversationTokens(message wshandler.Message) ([]conversations.Conve
 
 	members, err := caching.LoadMembersArray(conversationIds)
 	if err != nil {
-		wshandler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, localization.ErrorServer)
 		return nil, nil, nil, nil, false
 	}
 

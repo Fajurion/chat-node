@@ -3,6 +3,7 @@ package account
 import (
 	"chat-node/database"
 	"chat-node/database/fetching"
+	"chat-node/util/localization"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
@@ -19,7 +20,7 @@ func changeStatus(message wshandler.Message) {
 
 	// Save in database
 	if err := database.DBConn.Model(&fetching.Status{}).Where("id = ?", message.Client.ID).Update("data", status).Error; err != nil {
-		wshandler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, localization.ErrorServer)
 		return
 	}
 

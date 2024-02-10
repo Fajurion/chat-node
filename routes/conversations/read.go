@@ -5,6 +5,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/util"
+	"chat-node/util/localization"
 	"log"
 	"time"
 
@@ -43,7 +44,7 @@ func read(c *fiber.Ctx) error {
 
 	// Update read state
 	if err := database.DBConn.Model(&conversations.ConversationToken{}).Where("id = ?", token.ID).Update("last_read", time.Now().UnixMilli()).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 	token.LastRead = time.Now().UnixMilli()
 	caching.UpdateToken(token)

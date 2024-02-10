@@ -25,6 +25,8 @@ const DeletedMessage = "msg.deleted"
 const GroupNewAdmin = "group.new_admin"
 const GroupRankChange = "group.rank_change"
 const GroupMemberJoin = "group.member_join"
+const GroupMemberKick = "group.member_kick"
+const GroupMemberInvite = "group.member_invite"
 const GroupMemberLeave = "group.member_leave"
 
 func SendSystemMessage(conversation string, content string, attachments []string) error {

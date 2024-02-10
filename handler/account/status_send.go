@@ -5,6 +5,7 @@ import (
 	"chat-node/database/fetching"
 	"chat-node/handler/conversation"
 	"chat-node/util"
+	"chat-node/util/localization"
 	"log"
 
 	"github.com/Fajurion/pipes"
@@ -16,7 +17,7 @@ import (
 func sendStatus(message wshandler.Message) {
 
 	if message.ValidateForm("tokens", "status", "data") {
-		wshandler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, localization.InvalidRequest)
 		return
 	}
 
@@ -24,7 +25,7 @@ func sendStatus(message wshandler.Message) {
 	statusMessage := message.Data["status"].(string)
 	data := message.Data["data"].(string)
 	if err := database.DBConn.Model(&fetching.Status{}).Where("id = ?", message.Client.ID).Update("data", statusMessage).Error; err != nil {
-		wshandler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, localization.ErrorServer)
 		return
 	}
 

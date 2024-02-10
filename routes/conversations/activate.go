@@ -6,6 +6,7 @@ import (
 	"chat-node/database/conversations"
 	message_routes "chat-node/routes/conversations/message"
 	"chat-node/util"
+	"chat-node/util/localization"
 	"log"
 
 	integration "fajurion.com/node-integration"
@@ -57,19 +58,19 @@ func activate(c *fiber.Ctx) error {
 	token.Token = util.GenerateToken(util.ConversationTokenLength)
 
 	if err := database.DBConn.Save(&token).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	// Update token
 	err := caching.UpdateToken(token)
 	if err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	// Return all data
 	var tokens []conversations.ConversationToken
 	if err := database.DBConn.Where(&conversations.ConversationToken{Conversation: token.Conversation}).Find(&tokens).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	var members []returnableMember
@@ -83,13 +84,13 @@ func activate(c *fiber.Ctx) error {
 
 	var conversation conversations.Conversation
 	if err := database.DBConn.Where("id = ?", token.Conversation).Take(&conversation).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	if conversation.Type == conversations.TypeGroup {
 		err = message_routes.SendSystemMessage(token.Conversation, message_routes.GroupMemberJoin, []string{message_routes.AttachAccount(token.Data)})
 		if err != nil {
-			return integration.FailedRequest(c, "server.error", err)
+			return integration.FailedRequest(c, localization.ErrorServer, err)
 		}
 	}
 

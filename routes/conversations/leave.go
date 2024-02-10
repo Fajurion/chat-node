@@ -5,6 +5,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	message_routes "chat-node/routes/conversations/message"
+	"chat-node/util/localization"
 	"fmt"
 
 	integration "fajurion.com/node-integration"
@@ -31,23 +32,23 @@ func leaveConversation(c *fiber.Ctx) error {
 
 	// Delete token
 	if err := database.DBConn.Where("id = ?", token.ID).Delete(&conversations.ConversationToken{}).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	if err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 	caching.DeleteToken(token.ID)
 
 	members, err := caching.LoadMembersNew(token.Conversation)
 	if err != nil {
-		integration.FailedRequest(c, "server.error", err)
+		integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	// Check if the chat is a DM (send delete message if it is)
 	var conversation conversations.Conversation
 	if err := database.DBConn.Where("id = ?", token.Conversation).Take(&conversation).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	if conversation.Type == conversations.TypePrivateMessage && len(members) == 1 {
@@ -64,7 +65,7 @@ func leaveConversation(c *fiber.Ctx) error {
 
 		// Delete conversation
 		if err := deleteConversation(conversation.ID); err != nil {
-			return integration.FailedRequest(c, "server.error", err)
+			return integration.FailedRequest(c, localization.ErrorServer, err)
 		}
 
 		return integration.SuccessfulRequest(c)
@@ -95,16 +96,16 @@ func leaveConversation(c *fiber.Ctx) error {
 			// Promote to admin if needed
 			if needed {
 				if database.DBConn.Model(&conversations.ConversationToken{}).Where("id = ?", bestCase.ID).Update("rank", conversations.RankAdmin).Error != nil {
-					return integration.FailedRequest(c, "server.error", nil)
+					return integration.FailedRequest(c, localization.ErrorServer, nil)
 				}
 				err = caching.UpdateToken(bestCase)
 				if err != nil {
-					return integration.FailedRequest(c, "server.error", nil)
+					return integration.FailedRequest(c, localization.ErrorServer, nil)
 				}
 
 				err = message_routes.SendSystemMessage(token.Conversation, message_routes.GroupNewAdmin, []string{message_routes.AttachAccount(bestCase.Data)})
 				if err != nil {
-					return integration.FailedRequest(c, "server.error", nil)
+					return integration.FailedRequest(c, localization.ErrorServer, nil)
 				}
 			}
 		}

@@ -2,6 +2,7 @@ package conversation_routes
 
 import (
 	"chat-node/caching"
+	"chat-node/util/localization"
 	"fmt"
 
 	integration "fajurion.com/node-integration"
@@ -45,7 +46,7 @@ func listTokens(c *fiber.Ctx) error {
 
 		member, err := caching.GetTokenNew(memberToken.TokenID)
 		if err != nil && err != gorm.ErrRecordNotFound {
-			return integration.FailedRequest(c, "server.error", err)
+			return integration.FailedRequest(c, localization.ErrorServer, err)
 		}
 
 		realMembers[i] = returnableMemberToken{

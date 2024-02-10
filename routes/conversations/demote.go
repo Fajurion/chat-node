@@ -5,6 +5,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	message_routes "chat-node/routes/conversations/message"
+	"chat-node/util/localization"
 	"fmt"
 
 	integration "fajurion.com/node-integration"
@@ -54,19 +55,19 @@ func demoteToken(c *fiber.Ctx) error {
 	}
 
 	if err := database.DBConn.Model(&conversations.ConversationToken{}).Where("id = ? AND conversation = ?", userToken.ID, userToken.Conversation).Update("rank", rankToDemote).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 	prevRank := userToken.Rank
 	userToken.Rank = rankToDemote
 	err = caching.UpdateToken(userToken)
 	if err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	err = message_routes.SendSystemMessage(token.Conversation, message_routes.GroupRankChange, []string{fmt.Sprintf("%d", prevRank), fmt.Sprintf("%d", userToken.Rank),
 		message_routes.AttachAccount(userToken.Data), message_routes.AttachAccount(token.Data)})
 	if err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	return integration.SuccessfulRequest(c)

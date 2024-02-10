@@ -2,6 +2,7 @@ package space
 
 import (
 	"chat-node/caching"
+	"chat-node/util/localization"
 
 	integration "fajurion.com/node-integration"
 	"github.com/Fajurion/pipesfiber/wshandler"
@@ -21,7 +22,7 @@ func start(message wshandler.Message) {
 	// Create space
 	roomId, appToken, valid := caching.CreateSpace(message.Client.ID, integration.ClusterID)
 	if !valid {
-		wshandler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, localization.ErrorServer)
 		return
 	}
 

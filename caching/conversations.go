@@ -3,6 +3,7 @@ package caching
 import (
 	"chat-node/database"
 	"chat-node/database/conversations"
+	"chat-node/util/localization"
 	"errors"
 	"time"
 
@@ -15,7 +16,7 @@ var conversationsCache *ristretto.Cache // Conversation token ID -> Conversation
 const ConversationTTL = time.Hour * 1   // 1 hour
 
 // Errors
-var ErrInvalidToken = errors.New("invalid")
+var ErrInvalidToken = errors.New(localization.InvalidRequest)
 
 func setupConversationsCache() {
 	var err error

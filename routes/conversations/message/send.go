@@ -5,6 +5,7 @@ import (
 	"chat-node/database"
 	"chat-node/database/conversations"
 	"chat-node/util"
+	"chat-node/util/localization"
 	"log"
 	"time"
 
@@ -53,7 +54,7 @@ func sendMessage(c *fiber.Ctx) error {
 	// Load members
 	members, err := caching.LoadMembers(req.Conversation)
 	if err != nil {
-		return integration.FailedRequest(c, "server.error", nil)
+		return integration.FailedRequest(c, localization.ErrorServer, nil)
 	}
 
 	found := false
@@ -70,7 +71,7 @@ func sendMessage(c *fiber.Ctx) error {
 	messageId := util.GenerateToken(32)
 	certificate, err := conversations.GenerateCertificate(messageId, req.Conversation, req.TokenID)
 	if err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	log.Println(certificate)
@@ -86,11 +87,11 @@ func sendMessage(c *fiber.Ctx) error {
 	}
 
 	if err := database.DBConn.Create(&message).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
 	if err := database.DBConn.Model(&conversations.ConversationToken{}).Where("conversation = ? AND id = ?", req.Conversation, req.TokenID).Update("last_read", time.Now().UnixMilli()+1).Error; err != nil {
-		return integration.FailedRequest(c, "server.error", err)
+		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 	token.LastRead = time.Now().UnixMilli() + 1
 	caching.UpdateToken(token)

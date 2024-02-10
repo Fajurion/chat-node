@@ -2,6 +2,7 @@ package space
 
 import (
 	"chat-node/caching"
+	"chat-node/util/localization"
 
 	"github.com/Fajurion/pipesfiber/wshandler"
 )
@@ -18,7 +19,7 @@ func leaveCall(message wshandler.Message) {
 	// Leave space
 	valid := caching.LeaveSpace(message.Client.ID)
 	if !valid {
-		wshandler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, localization.ErrorServer)
 		return
 	}
 

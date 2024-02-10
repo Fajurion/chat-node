@@ -2,6 +2,7 @@ package account
 
 import (
 	"chat-node/caching"
+	"chat-node/util/localization"
 
 	"github.com/Fajurion/pipes"
 	"github.com/Fajurion/pipes/send"
@@ -12,7 +13,7 @@ import (
 func respondToStatus(message wshandler.Message) {
 
 	if message.ValidateForm("id", "token", "status", "data") {
-		wshandler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, localization.InvalidRequest)
 		return
 	}
 
@@ -24,14 +25,14 @@ func respondToStatus(message wshandler.Message) {
 	// Get from cache
 	convToken, err := caching.ValidateToken(id, token)
 	if err != nil {
-		wshandler.ErrorResponse(message, "invalid")
+		wshandler.ErrorResponse(message, localization.InvalidRequest)
 		return
 	}
 
 	// Check if this is a valid conversation
 	members, err := caching.LoadMembers(convToken.Conversation)
 	if err != nil {
-		wshandler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, localization.ErrorServer)
 		return
 	}
 
@@ -43,7 +44,7 @@ func respondToStatus(message wshandler.Message) {
 		Event:   statusEvent(status, data, ":a"),
 	})
 	if err != nil {
-		wshandler.ErrorResponse(message, "server.error")
+		wshandler.ErrorResponse(message, localization.ErrorServer)
 		return
 	}
 
