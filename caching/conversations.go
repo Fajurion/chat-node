@@ -5,6 +5,7 @@ import (
 	"chat-node/database/conversations"
 	"chat-node/util/localization"
 	"errors"
+	"slices"
 	"time"
 
 	"github.com/Fajurion/pipes/adapter"
@@ -106,6 +107,35 @@ func ValidateTokens(tokens *[]conversations.SentConversationToken) ([]conversati
 	}
 
 	return foundTokens, missingTokens, nil
+}
+
+// Does a lookup in the database on all tokens
+func ValidateTokensLookup(tokens *[]conversations.SentConversationToken) ([]conversations.ConversationToken, []string, error) {
+
+	tokenIds := make([]string, len(*tokens))
+	for i, token := range *tokens {
+		tokenIds[i] = token.ID
+	}
+
+	// Get tokens from database
+	var conversationTokens []conversations.ConversationToken
+	if err := database.DBConn.Model(&conversations.ConversationToken{}).Where("id IN ?", tokenIds).Find(&conversationTokens).Error; err != nil {
+		return nil, nil, err
+	}
+
+	for _, token := range conversationTokens {
+		conversationsCache.SetWithTTL(token.ID, token, 1, ConversationTTL)
+	}
+
+	// Get all missing tokens to delete those conversations from the client
+	for _, token := range conversationTokens {
+		index := slices.Index(tokenIds, token.ID)
+		if index >= 0 {
+			tokenIds = append(tokenIds[:index], tokenIds[index+1:]...)
+		}
+	}
+
+	return conversationTokens, tokenIds, nil
 }
 
 // Deletes cache and does database queries again (for when caching would break something)

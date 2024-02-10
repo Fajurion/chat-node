@@ -23,7 +23,7 @@ func subscribe(message wshandler.Message) {
 	}
 
 	date := int64(message.Data["date"].(float64))
-	conversationTokens, tokenIds, members, missingTokens, ok := PrepareConversationTokens(message)
+	conversationTokens, tokenIds, members, missingTokens, ok := PrepareConversationTokensWithLookup(message, true)
 	if !ok {
 		wshandler.ErrorResponse(message, localization.InvalidRequest)
 		return
@@ -43,7 +43,6 @@ func subscribe(message wshandler.Message) {
 		// Register adapter for the subscription
 		adapter.AdaptWS(adapter.Adapter{
 			ID: "s-" + token.Token,
-			// TODO: Fix this not disconnecting
 			Receive: func(ctx *adapter.Context) error {
 				client := *message.Client
 				log.Println(ctx.Adapter.ID, token.Token, client.ID)
@@ -96,6 +95,11 @@ func subscribe(message wshandler.Message) {
 
 // Returns: conversationTokens, tokenIds, members, missingTokens, success (bool)
 func PrepareConversationTokens(message wshandler.Message) ([]conversations.ConversationToken, []string, map[string][]caching.StoredMember, []string, bool) {
+	return PrepareConversationTokensWithLookup(message, false)
+}
+
+// Returns: conversationTokens, tokenIds, members, missingTokens, success (bool)
+func PrepareConversationTokensWithLookup(message wshandler.Message, lookup bool) ([]conversations.ConversationToken, []string, map[string][]caching.StoredMember, []string, bool) {
 
 	tokensUnparsed := message.Data["tokens"].([]interface{})
 	tokens := make([]conversations.SentConversationToken, len(tokensUnparsed))
@@ -112,7 +116,14 @@ func PrepareConversationTokens(message wshandler.Message) ([]conversations.Conve
 		return nil, nil, nil, nil, false
 	}
 
-	conversationTokens, missingTokens, err := caching.ValidateTokens(&tokens)
+	var conversationTokens []conversations.ConversationToken
+	var missingTokens []string
+	var err error
+	if lookup {
+		conversationTokens, missingTokens, err = caching.ValidateTokensLookup(&tokens)
+	} else {
+		conversationTokens, missingTokens, err = caching.ValidateTokens(&tokens)
+	}
 	if err != nil {
 		wshandler.ErrorResponse(message, localization.ErrorServer)
 		return nil, nil, nil, nil, false
