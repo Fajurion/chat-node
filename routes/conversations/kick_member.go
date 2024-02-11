@@ -2,6 +2,7 @@ package conversation_routes
 
 import (
 	"chat-node/caching"
+	"chat-node/database"
 	message_routes "chat-node/routes/conversations/message"
 	"chat-node/util/localization"
 
@@ -23,6 +24,10 @@ func kickMember(c *fiber.Ctx) error {
 		return integration.InvalidRequest(c, "invalid request")
 	}
 
+	if req.Id == req.Target {
+		return integration.InvalidRequest(c, "same token")
+	}
+
 	token, err := caching.ValidateToken(req.Id, req.Token)
 	if err != nil {
 		return integration.FailedRequest(c, localization.ErrorServer, err)
@@ -33,16 +38,27 @@ func kickMember(c *fiber.Ctx) error {
 	}
 
 	// Check if the token has the permission
-	if token.Rank > targetToken.Rank {
+	if token.Rank <= targetToken.Rank {
 		return integration.FailedRequest(c, localization.KickNoPermission, nil)
 	}
 
-	err = message_routes.SendSystemMessage(token.Conversation, message_routes.GroupMemberKick, []string{message_routes.AttachAccount(targetToken.Data)})
+	// Delete from the database
+	if err := database.DBConn.Delete(&targetToken).Error; err != nil {
+		return integration.FailedRequest(c, localization.ErrorServer, err)
+	}
+
+	err = message_routes.SendSystemMessage(token.Conversation, message_routes.GroupMemberKick, []string{message_routes.AttachAccount(token.Data), message_routes.AttachAccount(targetToken.Data)})
 	if err != nil {
 		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
 
-	// TODO: Kick the guy
+	err = message_routes.SendNotStoredSystemMessage(token.Conversation, message_routes.ConversationKick, []string{message_routes.AttachAccount(targetToken.Data)})
+	if err != nil {
+		return integration.FailedRequest(c, localization.ErrorServer, err)
+	}
+
+	// Unsubscribe from stuff
+	caching.DeleteToken(targetToken.ID, targetToken.Token)
 
 	return integration.SuccessfulRequest(c)
 }

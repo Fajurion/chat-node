@@ -33,6 +33,7 @@ type StoredMember struct {
 	Node    int64
 }
 
+// The value of a token in the cache if it should be relearned from the database
 const actionRelearnToken = "reget"
 
 // Always does database requests (use where caching would break stuff)

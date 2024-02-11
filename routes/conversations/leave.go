@@ -38,7 +38,7 @@ func leaveConversation(c *fiber.Ctx) error {
 	if err != nil {
 		return integration.FailedRequest(c, localization.ErrorServer, err)
 	}
-	caching.DeleteToken(token.ID)
+	caching.DeleteToken(token.ID, token.Token)
 
 	members, err := caching.LoadMembersNew(token.Conversation)
 	if err != nil {

@@ -29,6 +29,9 @@ const GroupMemberKick = "group.member_kick"
 const GroupMemberInvite = "group.member_invite"
 const GroupMemberLeave = "group.member_leave"
 
+// Message not stored, but sent to just disconnect one person
+const ConversationKick = "conv.kicked"
+
 func SendSystemMessage(conversation string, content string, attachments []string) error {
 
 	contentJson, err := sonic.MarshalString(map[string]interface{}{
@@ -52,6 +55,46 @@ func SendSystemMessage(conversation string, content string, attachments []string
 
 	if err := database.DBConn.Create(&message).Error; err != nil {
 		return err
+	}
+
+	// Load members
+	members, err := caching.LoadMembers(conversation)
+	if err != nil {
+		return err
+	}
+	adapters, nodes := caching.MembersToPipes(members)
+
+	event := MessageEvent(message)
+	err = send.Pipe(send.ProtocolWS, pipes.Message{
+		Channel: pipes.Conversation(adapters, nodes),
+		Event:   event,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SendNotStoredSystemMessage(conversation string, content string, attachments []string) error {
+
+	contentJson, err := sonic.MarshalString(map[string]interface{}{
+		"c": content,
+		"a": attachments,
+	})
+	if err != nil {
+		return err
+	}
+
+	messageId := util.GenerateToken(32)
+	message := conversations.Message{
+		ID:           messageId,
+		Conversation: conversation,
+		Certificate:  "",
+		Data:         contentJson,
+		Sender:       systemSender,
+		Creation:     time.Now().UnixMilli(),
+		Edited:       false,
 	}
 
 	// Load members

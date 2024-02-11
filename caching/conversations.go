@@ -171,7 +171,7 @@ func UpdateToken(token conversations.ConversationToken) error {
 	return nil
 }
 
-func DeleteToken(id string) {
-	adapter.RemoveWS(id)
+func DeleteToken(id, token string) {
+	adapter.RemoveWS("s-" + token)
 	conversationsCache.Del(id)
 }
