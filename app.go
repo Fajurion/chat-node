@@ -71,13 +71,23 @@ func main() {
 
 	// Check if test mode or production
 	args := strings.Split(domain, ":")
-	port, err := strconv.Atoi(args[1])
+	var port int
+	var err error
+	if os.Getenv("OVERWRITE_PORT") != "" {
+		port, err = strconv.Atoi(os.Getenv("OVERWRITE_PORT"))
+	} else {
+		port, err = strconv.Atoi(args[1])
+	}
 	if err != nil {
 		log.Println("Error: Couldn't parse port of current node")
 		return
 	}
 
-	pipes.SetupWS("ws://" + domain + "/adoption")
+	protocol := os.Getenv("WEBSOCKET_PROTOCOL")
+	if protocol == "" {
+		protocol = "wss://"
+	}
+	pipes.SetupWS(protocol + domain + "/adoption")
 
 	// Connect to other nodes
 	pipes.IterateNodes(func(_ string, node pipes.Node) bool {
