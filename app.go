@@ -87,7 +87,7 @@ func main() {
 	if protocol == "" {
 		protocol = "wss://"
 	}
-	pipes.SetupWS(protocol + domain + "/adoption")
+	pipes.SetupWS(protocol + domain + "/connect")
 
 	// Connect to other nodes
 	pipes.IterateNodes(func(_ string, node pipes.Node) bool {

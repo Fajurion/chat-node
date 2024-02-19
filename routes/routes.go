@@ -37,7 +37,7 @@ func Setup(router fiber.Router) {
 
 	router.Post("/ping", ping.Pong)
 
-	// Pipes fiber doesn't need(/support) encrypted routes
+	// Pipes fiber doesn't need(/support) encrypted routes (it actually does for socketless, which is why we now have a seperate )
 	setupPipesFiber(router, integration.NodePublicKey)
 
 	router.Route("/", encryptedRoutes)
@@ -80,6 +80,9 @@ func encryptedRoutes(router fiber.Router) {
 		// Go to the next middleware/handler
 		return c.Next()
 	})
+
+	// No authorization needed for this route
+	router.Post("/adoption/socketless", socketless)
 
 	// Authorized by using a remote id or normal token
 	router.Use(jwtware.New(jwtware.Config{
@@ -203,7 +206,9 @@ func setupPipesFiber(router fiber.Router, serverPublicKey *rsa.PublicKey) {
 			log.Printf("pipes-fiber error: %s \n", err.Error())
 		},
 	})
-	router.Route("/", pipesfroutes.SetupRoutes)
+	router.Route("/", func(router fiber.Router) {
+		pipesfroutes.SetupRoutes(router, false)
+	})
 }
 
 // Extra client data attached to the pipes-fiber client
